@@ -18,11 +18,11 @@ _** Most likely to be removed as no current features require these permissions._
 - Kick Members
 - Send Messages
 - Send Messages in Threads
-- Embed Links **
-- Attach Files **
+- Embed Links _**_
+- Attach Files _**_
 - Add Reactions
 - Use External Emoji
-- Manage Messages **
+- Manage Messages _**_
 - Read Message History
 - Connect
 - Speak
