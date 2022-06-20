@@ -1,13 +1,13 @@
-# CodeMentorsOfficial#6963
+# Homies Bot#1202
 
-This bot is available for invite to any server, limited hosting capacity : [available here](https://discord.com/api/oauth2/authorize?client_id=823797106841092148&permissions=8&scope=bot)
+This bot is limited to authorized servers only, To request access, join [The Task Force discord server and DM @phxntxsmic#2022](https://discord.gg/FkMFn9DZuv)
 
 # Information
 
 - This bot is under development. Some key features are implemented.
 - This bot is occasionally online. No official hosting service has been selected for use.
-- Requires administrator permissions; permissions may change as features change.
+- Requires administrator permissions; permissions may change as the bot matures and the required permissions become known.
 
 
 # Contact
-[Discord](https://discord.gg/mUNtDtD4dP)
+[Discord](https://discord.gg/FkMFn9DZuv)
