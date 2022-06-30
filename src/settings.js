@@ -1,3 +1,9 @@
+/**
+
+NOTE: This file is not in use currently and will be revamped in the coming weeks ahead.
+
+*/
+
 console.log("Loading... settings.js");
 
 const embed = require('./util/homiesEmbed');
