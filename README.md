@@ -2,6 +2,10 @@
 
 This bot is limited to authorized servers only, To request access, join [The Task Force discord server and DM @phxntxsmic#2022](https://discord.gg/FkMFn9DZuv)
 
+# Upcoming changes
+
+- A swap to a OOP structure has been started. This repo will be completely revamped in the coming weeks.
+
 # Information
 
 - This bot is under development. Some key features are implemented.
