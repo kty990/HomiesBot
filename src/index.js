@@ -4,7 +4,7 @@ const { Guild } = require('discord.js');
 
 // ** Local Dependancies **
 
-const auth = require("../auth.json"); // Omitted for security reasons
+const auth = require("../auth.json"); // File omitted for security reasons
 
 // ** Modules **
 
