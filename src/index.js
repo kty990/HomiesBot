@@ -4,12 +4,12 @@ const { Guild } = require('discord.js');
 
 // ** Local Dependancies **
 
-const auth = require("../auth.json"); // File omitted for security reasons
+const auth = require("../auth.json");
 
 // ** Modules **
 
 const { CommandHandler } = require('./cmdh.js');
-const { Track, Subscription } = require('./music/musicHandler.js');
+// const { Track, Subscription } = require('./music/musicHandler.js'); // Not used here, used within CommandHandler (cmdh.js)
 const { DatastoreHandler } = require('./Datastore.js');
 
 // ** Misc. Variables **
@@ -19,7 +19,7 @@ var botOnlineSince;
 
 const Intents = Discord.Intents;
 const client = new Discord.Client({
-    intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
+    intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_VOICE_STATES],
 });
 
 const ConnectedGuilds = {};
@@ -35,13 +35,17 @@ function InitializeGuildData(guild) {
     let ds = new DatastoreHandler(guild, true);
     ConnectedGuilds[guild.id] = ds;
     let ch = new CommandHandler(client);
-    ch.Initialize();
+    ch.Initialize(ds);
     CommandHandlers[guild.id] = ch;
 }
 
 client.on("ready", () => {
     client.user.setPresence({ activities: [{ name: 'in development' }], status: 'idle' });
     console.log("Bot online");
+});
+
+client.on("error", error => {
+    console.warn(`\n\n\nWARN: An unhandled error occured at client.on('error'):\n${error}\n\n`);
 });
 
 client.on("guildCreate", guild => {
