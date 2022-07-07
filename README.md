@@ -1,6 +1,6 @@
 # Homies Bot#1202
 
-This bot is limited to authorized servers only, To request access, join [The Task Force discord server and DM @phxntxsmic#2022](https://discord.gg/FkMFn9DZuv)
+This bot is limited to authorized servers only, To request access, join the [Homies Bot discord server](https://discord.gg/7YbWnNpsU5) and DM @phxntxsmic#2022
 
 # Information
 
@@ -30,4 +30,4 @@ _** Most likely to be removed as no current features require these permissions._
 - Deafen Members
 
 # Contact
-[Discord](https://discord.gg/FkMFn9DZuv)
+[Discord](https://discord.gg/7YbWnNpsU5)
