@@ -31,6 +31,7 @@ class command {
 
         this.name = "nowplaying";
         this.description = "Shows information on the currently playing song.";
+        this.options = [];
     }
 
     /**
@@ -45,6 +46,21 @@ class command {
 
         const guild = message.guild;
         const channel = message.channel;
+
+        if (voice === null || voice === undefined) {
+            embed(client, embed => {
+                embed.title = "Now Playing"
+                embed.description = "[empty]";
+                embed.footer.text = `Used by ${message.author.tag}`;
+                channel.send({
+                    embeds: [embed],
+                })
+                    .catch(e => {
+                        throw new Error(e);
+                    })
+            })
+            return;
+        }
 
         let data = subscription.GetQueue();
         let playing = data['playing'];
@@ -82,7 +98,68 @@ class command {
                 })
         })
 
-        return musicData; //temporary
+        return {
+            "subscription": subscription,
+            "voice": voice,
+        }
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(musicData, interaction, client) {
+        return new Promise((resolve, reject) => {
+            let voice = musicData['voice'];
+            let subscription = musicData['subscription'];
+
+            const guild = interaction.guild;
+            const channel = interaction.channel;
+
+            let data = subscription.GetQueue();
+            let playing = data['playing'];
+
+            let dot = '🔘';
+            let dash = '▬';
+
+            let dotAndDash = "";
+
+            let left = 30 - Math.ceil(playing.timer.left / playing.duration * 30);
+            let right = 30 - left;
+
+            for (let x = 0; x < left; x++) {
+                dotAndDash = dotAndDash + dash;
+            }
+            dotAndDash = dotAndDash + dot;
+            for (let x = 0; x < right; x++) {
+                dotAndDash = dotAndDash + dash;
+            }
+
+            embed(client, embed => {
+                embed.title = "Now Playing"
+                embed.description = `[${playing.title}](${playing.url})\nRequested by: ${playing.requester || 'Unknown'}`;
+                embed.fields.push({
+                    name: "\u2800",
+                    value: `\`${dotAndDash}\`\nDuration: ${DisplayDuration(playing.duration - playing.timer.left)}/${DisplayDuration(playing.duration)}`,
+                    inline: false,
+                });
+                embed.footer.text = `Used by ${interaction.user.tag}`;
+                channel.send({
+                    embeds: [embed],
+                })
+                    .catch(e => {
+                        reject(e);
+                    })
+            })
+
+            resolve({
+                "subscription": subscription,
+                "voice": voice,
+            });
+        })
     }
 }
 
