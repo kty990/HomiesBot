@@ -32,11 +32,14 @@ const CommandHandlers = {};
  * @param {Guild} guild 
  */
 function InitializeGuildData(guild) {
-    let ds = new DatastoreHandler(guild, true);
-    ConnectedGuilds[guild.id] = ds;
-    let ch = new CommandHandler(client);
-    ch.Initialize(ds);
-    CommandHandlers[guild.id] = ch;
+    return new Promise((resolve, reject) => {
+        let ds = new DatastoreHandler(guild, true);
+        ConnectedGuilds[guild.id] = ds;
+        let ch = new CommandHandler(client, guild);
+        ch.Initialize(ds);
+        CommandHandlers[guild.id] = ch;
+        resolve();
+    });
 }
 
 client.on("ready", () => {
@@ -52,10 +55,10 @@ client.on("guildCreate", guild => {
     InitializeGuildData(guild);
 })
 
-client.on('messageCreate', message => {
+client.on('messageCreate', async (message) => {
     const guild = message.guild;
 
-    if (ConnectedGuilds[guild.id] == undefined || ConnectedGuilds[guild.id] == null) InitializeGuildData(guild);
+    if (ConnectedGuilds[guild.id] == undefined || ConnectedGuilds[guild.id] == null) await InitializeGuildData(guild);
 
     let prefix = ConnectedGuilds[guild.id].Get("prefix");
 
