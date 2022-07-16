@@ -124,6 +124,7 @@ class Subscription {
         this.readyLock = false;
         this.queueLock = false;
         this.queue = [];
+        this.queueLoop = false;
         this.currentTrack = null;
         this.onPlay = onPlay;
         this.onAdd = onAdd;
@@ -154,10 +155,24 @@ class Subscription {
 
         this.audioPlayer.on('error', error => {
             console.warn(`\n\nAn unhandled audioPlayer error occured: ${error}\n\n`);
-            message.channel.send({
-                content: `An unhandled audioPlayer error occured: ${error}`
-            })
-                .catch(console.error);
+            try {
+                embed(this.client, e => {
+                    e.color = 0xeb4034;
+                    if (`${error}`.length >= 1025) {
+                        e.description = `Error message too long to send`;
+                    } else {
+                        e.description = `${error}`;
+                    }
+                    e.title = `An unexpected AudioPlayer error occured!`;
+                    e.footer.text = "An error occured.";
+                    message.channel.send({
+                        embeds: [e],
+                    })
+                        .catch(console.error);
+                });
+            } catch (e) {
+                console.error(e);
+            }
         });
     }
 
@@ -167,8 +182,15 @@ class Subscription {
      * @param {Track} track 
      */
     enqueue(track) {
+        if (this.queue === null) return;
         this.queue.push(track);
         this.processQueue();
+    }
+
+    playlistEnqueue(track) {
+        if (this.queue === null) return;
+        this.queue.push(track);
+        this.processQueue(false, true);
     }
 
     /**
@@ -178,6 +200,28 @@ class Subscription {
      */
     SetOnPlay(onPlay) {
         this.onPlay = onPlay;
+    }
+
+    /**
+     * Untested method: May not work as intended.
+     * 
+     * @returns Promise
+     */
+    shuffle() {
+        if (this.queue === null) return;
+        let currentIndex = this.queue.length, randomIndex;
+
+        // While there remain elements to shuffle.
+        while (currentIndex != 0) {
+
+            // Pick a remaining element.
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+
+            // And swap it with the current element.
+            [this.queue[currentIndex], this.queue[randomIndex]] = [
+                this.queue[randomIndex], this.queue[currentIndex]];
+        }
     }
 
     /**
@@ -243,6 +287,7 @@ class Subscription {
      * @returns void
      */
     Stop() {
+        if (this.queue === null) return;
         try {
             this.queueLock = true;
             this.queue = [];
@@ -258,6 +303,7 @@ class Subscription {
      * 
      */
     SkipTrack() {
+        if (this.queue === null) return;
         this.currentTrack.timer.stop();
         this.processQueue(true);
     }
@@ -266,6 +312,7 @@ class Subscription {
      * Not implemented
      */
     PauseTrack() {
+        if (this.queue === null) return;
         try {
             this.audioPlayer.pause();
             this.currentTrack.timer.stop();
@@ -278,6 +325,7 @@ class Subscription {
      * Not implemented
      */
     ResumeTrack() {
+        if (this.queue === null) return;
         try {
             this.audioPlayer.unpause();
             this.currentTrack.timer.start();
@@ -292,14 +340,15 @@ class Subscription {
      * 
      * @returns boolean
      */
-    async processQueue(skip) {
+    async processQueue(skip, isPlaylist) {
+        if (this.queue === null) return;
         try {
             if ((skip === false || skip === null || skip === undefined) && (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.queue.length === 0)) {
                 console.debug(`Unable to process queue: \nQueueLock: ${this.queueLock}\nStatus: ${this.audioPlayer.state.status}\nQueue: ${this.queue.length}`);
                 if (this.audioPlayer.state.status === AudioPlayerStatus.Playing) {
                     if (this.onAdd) {
                         try { // for debugging purposes
-                            this.onAdd(this.queue[this.queue.length - 1]);
+                            if (!isPlaylist) this.onAdd(this.queue[this.queue.length - 1]);
                         } catch (e) {
                             console.error(e);
                         }
@@ -316,6 +365,9 @@ class Subscription {
             this.queueLock = true;
 
             // Take the first item from the queue. This is guaranteed to exist due to the non-empty check above.
+            if (this.queueLoop && this.currentTrack) {
+                this.queue.push(this.currentTrack);
+            }
             this.currentTrack = this.queue.shift();
             try {
                 // Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
