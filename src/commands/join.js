@@ -10,6 +10,7 @@ class command {
 
         this.name = "join";
         this.description = "Joins a voice channel, unless the bot is already connected to a voice channel.";
+        this.options = [];
     }
 
     /**
@@ -90,6 +91,89 @@ class command {
             "subscription": subscription,
             "voice": voice,
         }
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(musicData, interaction, client) {
+        return new Promise((resolve, reject) => {
+            let voice = musicData['voice'];
+            let subscription = musicData['subscription'];
+
+            const member = interaction.member;
+            if (member === undefined || member === null) {
+                reject("Unable to run command with null member.");
+            }
+            const memberVoice = member.voice;
+            const vc = memberVoice.channel;
+            const guild = interaction.guild;
+            const channel = interaction.channel;
+
+            let d = new Date();
+
+            if (vc !== null && vc !== undefined) {
+                if (voice !== null && voice !== undefined) {
+                    console.log(voice.joinConfig.channelId, vc.id);
+                    if (voice.joinConfig.channelId !== vc.id) {
+                        reject("Already in a voice channel. Make me leave that channel before I can join a new one.");
+                    }
+                }
+
+                if ((voice === null || voice === undefined) || (subscription === null || subscription === undefined)) {
+                    voice = joinVoiceChannel({
+                        channelId: vc.id,
+                        guildId: guild.id,
+                        selfDeaf: true,
+                        adapterCreator: guild.voiceAdapterCreator,
+                    });
+                    embed(client, embed => {
+                        embed.description = `Joined and bound to ${vc}`;
+                        channel.send({
+                            embeds: [embed],
+                        })
+                            .catch(console.error);
+                    });
+                    subscription = new Subscription(null, voice, vc, (track) => {
+                        embed(client, embed => {
+                            embed.title = "Now playing";
+                            embed.fields.push({
+                                name: "\u2800",
+                                value: `[${track.title}](${track.url})`,
+                                inline: false,
+                            });
+                            channel.send({
+                                embeds: [embed]
+                            }, d.toISOString())
+                                .catch(console.error);
+                        })
+                    }, (track) => {
+                        embed(client, embed => {
+                            embed.title = "Added to Queue";
+                            embed.fields.push({
+                                name: "\u2800",
+                                value: `[${track.title}](${track.url})`,
+                                inline: false,
+                            });
+                            channel.send({
+                                embeds: [embed]
+                            }, d.toISOString())
+                                .catch(console.error);
+                        })
+                    });
+                }
+            } else if (vc === null) {
+                reject("Unable to join **null** voice channel.");
+            }
+            resolve({
+                "subscription": subscription,
+                "voice": voice,
+            });
+        })
     }
 }
 
