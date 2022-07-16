@@ -2,18 +2,20 @@ const embed = require('../homiesEmbed.js');
 const Discord = require('discord.js');
 
 const commands = [ // required to edit as more commands are added
-    "play",
-    "skip (WIP)",
+    "play [url / query]",
+    "skip",
     "nowplaying",
     "resume",
     "pause",
+    "shuffle",
     "join",
     "leave",
-    "queue",
-    "say",
-    "cmds",
-    "aliases",
-    "help (WIP)",
+    "queue [page]",
+    "loopqueue",
+    "say [message]",
+    "cmds [page]",
+    "aliases [page]",
+    "help",
     "info (WIP)",
     "serverinfo (WIP)",
     "settings (WIP)",
@@ -51,17 +53,17 @@ class command {
         }
         if (page <= 0) page = 1;
         var count = 0;
-        var alliases = "";
+        var cmds = "";
         commands.forEach((v, i) => {
             count++;
             if (count > (page - 1) * 10 && count <= page * 10) {
-                var newallias = `${count}. ${this.guildInfo.Get('prefix')}${commands[i]}`;
-                alliases = alliases + newallias + "\n";
+                let newcmd = `**${count}.** ${this.guildInfo.Get('prefix')}${commands[i]}`;
+                cmds = cmds + newcmd + "\n";
             }
         })
 
-        if (alliases == "") {
-            alliases = "[empty]";
+        if (cmds == "") {
+            cmds = "[empty]";
         }
 
         let d = new Date();
@@ -69,12 +71,59 @@ class command {
 
         embed(client, myEmbed => {
             myEmbed.title = "Commands";
-            myEmbed.description = alliases;
+            myEmbed.description = cmds;
             myEmbed.footer.text = `Say ${this.guildInfo.Get('prefix')}cmds [page number]`;
             message.channel.send({
                 embeds: [myEmbed],
             }, d.toISOString());
         });
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(interaction, client) {
+        return new Promise((resolve, reject) => {
+            const { options } = interaction;
+
+            const channel = interaction.channel;
+            let page = options.getInteger("page", false);
+
+            if (page === null || page === undefined) {
+                page = 1;
+            }
+            if (page <= 0) page = 1;
+            var count = 0;
+            var alliases = "";
+            commands.forEach((v, i) => {
+                count++;
+                if (count > (page - 1) * 10 && count <= page * 10) {
+                    var newallias = `${count}. ${this.guildInfo.Get('prefix')}${commands[i]}`;
+                    alliases = alliases + newallias + "\n";
+                }
+            })
+
+            if (alliases == "") {
+                alliases = "[empty]";
+            }
+
+            let d = new Date();
+
+
+            embed(client, myEmbed => {
+                myEmbed.title = "Commands";
+                myEmbed.description = alliases;
+                myEmbed.footer.text = `Say ${this.guildInfo.Get('prefix')}cmds [page number]`;
+                channel.send({
+                    embeds: [myEmbed],
+                }, d.toISOString());
+            });
+            resolve(null);
+        })
     }
 }
 
