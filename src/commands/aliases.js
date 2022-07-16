@@ -55,7 +55,10 @@ class command {
         for (const [command, allias] of Object.entries(aliases)) {
 
             // Choice 1
-            if (allias == null || allias.length == 0) continue;
+            if (allias == null || allias.length == 0) {
+                alliases = alliases + `${this.guildInfo.Get('prefix')}${command} : **n/a**\n`;
+                continue;
+            }
             // Choice 2 is to put [empty] in place of the allias(es)
             count++;
             if (count > (page - 1) * 10 && count < page * 10) {
@@ -81,6 +84,62 @@ class command {
                 embeds: [myEmbed],
             }, d.toISOString());
         });
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns Promise
+     */
+    slashExe(interaction, client) {
+        return new Promise((resolve, reject) => {
+            const { options } = interaction;
+            let page = options.getInteger("page", false);
+
+            const channel = interaction.channel;
+
+            if (page === null || page === undefined) {
+                page = 1;
+            }
+            if (page <= 0) page = 1;
+            let count = 0;
+            let alliases = "";
+            for (const [command, allias] of Object.entries(aliases)) {
+
+                // Choice 1
+                if (allias == null || allias.length == 0) {
+                    alliases = alliases + "n/a\n";
+                    continue;
+                }
+                // Choice 2 is to put [empty] in place of the allias(es)
+                count++;
+                if (count > (page - 1) * 10 && count < page * 10) {
+                    let newallias = `${this.guildInfo.Get('prefix')}${command} : \`${this.guildInfo.Get('prefix')}${allias.join(", " + this.guildInfo.Get('prefix'))}\``;
+                    alliases = alliases + newallias + "\n";
+                } else if (count > page * 10) {
+                    break;
+                }
+            }
+
+            if (alliases == "") {
+                alliases = "[empty]";
+            }
+
+            let d = new Date();
+
+
+            embed(client, myEmbed => {
+                myEmbed.title = "Aliases";
+                myEmbed.description = alliases;
+                myEmbed.footer.text = `Say ${this.guildInfo.Get('prefix')}aliases [page number]`;
+                channel.send({
+                    embeds: [myEmbed],
+                }, d.toISOString());
+            });
+            resolve(null);
+        })
     }
 }
 
