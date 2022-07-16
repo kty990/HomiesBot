@@ -9,6 +9,7 @@ class command {
 
         this.name = "skip";
         this.description = "Skips the current song track.";
+        this.options = [];
         // this.options = [
         //     {
         //         name: "url",
@@ -38,6 +39,32 @@ class command {
             content: `**Skipped** ⏩`,
         })
             .catch(console.error);
+
+        return {
+            "subscription": subscription,
+            "voice": voice,
+        }
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(musicData, interaction, client) {
+        return new Promise((resolve, reject) => {
+            let voice = musicData['voice'];
+            let subscription = musicData['subscription'];
+
+            const guild = message.guild;
+            const channel = message.channel;
+
+            subscription.SkipTrack();
+
+            resolve(`**Skipped** ⏩`);
+        })
     }
 }
 
