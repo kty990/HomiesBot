@@ -9,6 +9,7 @@ class command {
 
         this.name = "pause";
         this.description = "In development";
+        this.options = [];
         // this.options = [
         //     {
         //         name: "url",
@@ -38,6 +39,38 @@ class command {
             content: `**Paused** ⏸️`,
         })
             .catch(console.error);
+        return {
+            "subscription": subscription,
+            "voice": voice,
+        }
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(musicData, interaction, client) {
+        return new Promise((resolve, reject) => {
+            let voice = musicData['voice'];
+            let subscription = musicData['subscription'];
+
+            const guild = message.guild;
+            const channel = message.channel;
+
+            subscription.PauseTrack();
+
+            channel.send({
+                content: `**Paused** ⏸️`,
+            })
+                .catch(console.error);
+            resolve({
+                "subscription": subscription,
+                "voice": voice,
+            });
+        })
     }
 }
 
