@@ -38,6 +38,21 @@ class command {
             })
             .catch(console.error)
     }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(interaction, client) {
+        return new Promise((resolve, reject) => {
+            const { options } = interaction;
+            let message = options.getString("message", true);
+            resolve(`${message}`);
+        })
+    }
 }
 
 
