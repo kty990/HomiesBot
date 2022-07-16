@@ -5,15 +5,73 @@ const request = require('request');
 const { getInfo } = require('ytdl-core');
 const Discord = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
+const { crypto_secretstream_xchacha20poly1305_ABYTES } = require('libsodium-wrappers');
+
+function isURL(str) {
+    try {
+        var value = str.search("https://www.youtube.com/");
+        if (value == -1) value = str.search("http://youtu.be");
+        if (value == -1) value = str.search("https://youtu.be");
+        if (value == -1) value = str.search("http://www.youtube.com/");
+        if (value == -1) {
+            return false;
+        }
+        return true;
+    } catch (err) {
+        console.log(`Error processing isURL(${str}) : ${err}`);
+        return false;
+    }
+}
 
 async function GenerateURL(query) {
+    console.log("GenerateURL called.")
     // regex: (?:https?:\/\/)?(?:www\.)?youtu(?:\.be\/|be.com\/\S*(?:watch|embed)(?:(?:(?=\/[-a-zA-Z0-9_]{11,}(?!\S))\/)|(?:\S*v=|v\/)))([-a-zA-Z0-9_]{11,})
-    const regex = "(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\\-_]+)\&?";
-    if (query.match(regex)) {
+    const videoRegex = "(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\\-_]+)\&?";
+    if (query.match(videoRegex)) {
+        console.log("Returning url");
         return query;
-    } else {
+    } else if (query.includes("playlist") && isURL(query)) { // change to regex
+        console.log("playlist");
         // Generate a valid URL
+        // var localQuery = query.split(" ").join("+");
+        // const queryURL = `https://www.youtube.com/results?search_query=${localQuery}`;
 
+        const queryURL = query; // playlist URL
+
+        let data = [];
+        let finished = false;
+        request(queryURL, (error, response, body) => {
+            if (error != null && error != false) {
+                throw new Error(`Unable to fetch URL from query: ${error}`);
+            }
+            let firstVideoIndex = body.toLowerCase().indexOf('watch?v=');
+            try {
+                while (firstVideoIndex !== -1) {
+                    const videoId = body.substr(firstVideoIndex, firstVideoIndex + 19);
+                    const link = `https://www.youtube.com/${videoId.split('"')[0].split("\\u0026")[0]}`;
+                    console.log(`Link: ${link}`);
+                    if (!data.find(l => l === link)) {
+                        data.push(link);
+                    }
+                    firstVideoIndex = body.toLowerCase().indexOf('watch?v=', firstVideoIndex + 1);
+                    console.log(`Attempting to get next video with firstVideoIndex: ${firstVideoIndex}`);
+
+                }
+                finished = true;
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        while (!finished) {
+            await new Promise(r => setTimeout(r, 500)).catch(console.error);
+        }
+
+        console.log(`Returning: ${data || null}`)
+        return data || null;
+    } else {
+        console.log("query");
+        // Generate a valid URL
         var localQuery = query.split(" ").join("+");
         const queryURL = `https://www.youtube.com/results?search_query=${localQuery}`;
 
@@ -22,7 +80,7 @@ async function GenerateURL(query) {
             if (error != null && error != false) {
                 throw new Error(`Unable to fetch URL from query: ${error}`);
             }
-            var firstVideoIndex = body.toLowerCase().indexOf('watch?v=');
+            let firstVideoIndex = body.toLowerCase().indexOf('watch?v=');
             const videoId = body.substr(firstVideoIndex, firstVideoIndex + 19);
             const link = `https://www.youtube.com/${videoId.split('"')[0].split("\\u0026")[0]}`;
             console.log(`Link: ${link}`);
@@ -42,7 +100,7 @@ async function GenerateURL(query) {
  * 
  * @param {number} duration Seconds
  */
-function DisplayDuration(duration) {
+async function DisplayDuration(duration) {
     let hours = 0;
     let minutes = 0;
     let seconds = duration;
@@ -121,48 +179,17 @@ class command {
                     })
                         .catch(console.error);
                 });
-                subscription = new Subscription(message, voice, vc, (track) => {
-                    embed(client, embed => {
-                        embed.title = "Now playing";
-                        embed.fields.push({
-                            name: "\u2800",
-                            value: `[${track.title}](${track.url})\n\`Requested by: ${track.requester || 'Unknown'}\`\n\`Duration: ${DisplayDuration(track.duration)}\``,
-                            inline: false,
-                        });
-                        embed.footer.text = `Playing`;
-                        channel.send({
-                            embeds: [embed]
-                        }, d.toISOString())
-                            .catch(console.error);
-                    })
-                }, (track) => {
-                    embed(client, embed => {
-                        embed.title = "Added to Queue";
-                        embed.fields.push({
-                            name: "\u2800",
-                            value: `[${track.title}](${track.url})\n\`Requested by: ${track.requester || 'Unknown'}\`\n\`Duration: ${DisplayDuration(track.duration)}\``,
-                            inline: false,
-                        });
-                        embed.footer.text = `Use ${this.guildInfo.Get('prefix')}queue to view the queue`;
-                        channel.send({
-                            embeds: [embed]
-                        }, d.toISOString())
-                            .catch(console.error);
-                    })
-                });
+                subscription = new Subscription(message, voice, vc, null, null); // both callbacks are set in a few lines
             }
         } else {
             throw new Error(`Unable to join **null** voice channel`);
         }
 
         subscription.SetOnPlay((track) => {
-            embed(client, embed => {
+            embed(client, async embed => {
                 embed.title = "Now playing";
-                embed.fields.push({
-                    name: "\u2800",
-                    value: `[${track.title}](${track.url})\n\`Requested by: ${track.requester || 'Unknown'}\`\n\`Duration: ${DisplayDuration(track.duration)}\``,
-                    inline: false,
-                });
+                let duration = await DisplayDuration(track.duration);
+                embed.description = `[${track.title}](${track.url})\n\`Requested by: ${track.requester.user.tag || 'Unknown'}\`\n\`Duration: ${duration}\``;
                 embed.footer.text = `Playing`;
                 channel.send({
                     embeds: [embed]
@@ -172,13 +199,14 @@ class command {
         });
 
         subscription.SetOnAdd((track) => {
-            embed(client, embed => {
+            if (!track) {
+                console.log("No track provided for subscription.OnAdd().. from play.js");
+                return;
+            }
+            embed(client, async embed => {
                 embed.title = "Added to Queue";
-                embed.fields.push({
-                    name: "\u2800",
-                    value: `[${track.title}](${track.url})\n\`Requested by: ${track.requester || 'Unknown'}\`\n\`Duration: ${DisplayDuration(track.duration)}\``,
-                    inline: false,
-                });
+                let duration = await DisplayDuration(track.duration);
+                embed.description = `[${track.title}](${track.url})\n\`Requested by: ${track.requester.user.tag || 'Unknown'}\`\n\`Duration: ${duration}\``;
                 embed.footer.text = `Use ${this.guildInfo.Get('prefix')}queue to view the queue`;
                 channel.send({
                     embeds: [embed]
@@ -204,14 +232,48 @@ class command {
             .catch(console.error)
 
         GenerateURL(args.join(' '))
-            .then(url => {
+            .then(async (url) => {
                 console.log(`URL: ${url}`);
-                getInfo(url)
-                    .then(info => {
-                        let track = new Track(url, member, info);
-                        subscription.enqueue(track);
-                    })
-                    .catch(console.error);
+                if (typeof url === 'string') {
+                    // Single video
+                    getInfo(url)
+                        .then(info => {
+                            let track = new Track(url, member, info);
+                            subscription.enqueue(track);
+                        })
+                        .catch(console.error);
+                } else if (url !== null) {
+                    // Playlist
+                    console.log("Attempting to enqueue playlist...");
+                    let duration = 0;
+                    for (let x = 0; x < url.length; x++) {
+                        console.log(`Attempting to enqueue: ${url[x]}`);
+                        await getInfo(url[x])
+                            .then(info => {
+                                let track = new Track(url[x], member, info);
+                                subscription.playlistEnqueue(track);
+                                duration = duration + parseInt(info.videoDetails.lengthSeconds);
+                            })
+                            .catch(console.error);
+                    }
+                    console.log(`Duration of playlist: ${duration}`);
+                    try {
+                        embed(client, async embed => {
+                            embed.title = "Playlist Added to Queue";
+                            let dur = await DisplayDuration(duration);
+                            embed.description = `${args.join(' ')}\n\`Requested by: ${member.user.tag || 'Unknown'}\`\n\`Duration: ${dur}\``;
+                            embed.footer.text = `Use ${this.guildInfo.Get('prefix')}queue to view the queue`;
+                            channel.send({
+                                embeds: [embed]
+                            }, d.toISOString())
+                                .catch(console.error);
+                        })
+                    } catch (err) {
+                        console.log(err);
+                    }
+                } else {
+                    console.error(`Unable to generate url for ${args.join(' ')}`);
+                }
             })
             .catch(console.error);
 
@@ -220,6 +282,15 @@ class command {
             "voice": voice,
         }
     }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(musicData, interaction, client) { }
 }
 
 
