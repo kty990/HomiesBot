@@ -9,6 +9,7 @@ class command {
 
         this.name = "leave";
         this.description = "Leaves a voice channel if the user is in a voice channel with the bot.";
+        this.options = [];
     }
 
     /**
@@ -43,6 +44,42 @@ class command {
             "subscription": null,
             "voice": null,
         }
+    }
+
+    /**
+     * 
+     * @param {*} interaction 
+     * @param {*} client 
+     * 
+     * @returns void
+     */
+    slashExe(musicData, interaction, client) {
+        return new Promise((resolve, reject) => {
+            let voice = musicData['voice'];
+            let subscription = musicData['subscription'];
+
+            const guild = interaction.guild;
+            const channel = interaction.channel;
+
+            if (voice !== null && voice !== undefined) {
+                voice.disconnect();
+                voice.destroy();
+                subscription.destroy();
+            }
+
+            embed(client, embed => {
+                embed.description = `Okay, goodbye!`;
+                embed.footer.text = `Use ${this.guildInfo.Get('prefix')}join and I will join back`;
+                channel.send({
+                    embeds: [embed],
+                })
+                    .catch(console.error);
+            })
+            resolve({
+                "subscription": subscription,
+                "voice": voice,
+            });
+        })
     }
 }
 
