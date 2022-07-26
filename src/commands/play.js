@@ -1,11 +1,10 @@
 const embed = require('../homiesEmbed.js');
 const { Track, Subscription } = require('../music/musicHandler');
 
-const request = require('request');
+const axios = require('axios');
 const { getInfo } = require('ytdl-core');
 const Discord = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
-const { crypto_secretstream_xchacha20poly1305_ABYTES } = require('libsodium-wrappers');
 
 function isURL(str) {
     try {
@@ -40,17 +39,15 @@ async function GenerateURL(query) {
 
         let data = [];
         let finished = false;
-        request(queryURL, (error, response, body) => {
-            if (error != null && error != false) {
-                throw new Error(`Unable to fetch URL from query: ${error}`);
-            }
+        axios.get(queryURL).then(res => {
+            let body = res.data;
             let firstVideoIndex = body.toLowerCase().indexOf('watch?v=');
             try {
                 while (firstVideoIndex !== -1) {
                     const videoId = body.substr(firstVideoIndex, firstVideoIndex + 19);
                     const link = `https://www.youtube.com/${videoId.split('"')[0].split("\\u0026")[0]}`;
                     console.log(`Link: ${link}`);
-                    if (!data.find(l => l === link)) {
+                    if (!data.includes(link)) {
                         data.push(link);
                     }
                     firstVideoIndex = body.toLowerCase().indexOf('watch?v=', firstVideoIndex + 1);
@@ -61,7 +58,10 @@ async function GenerateURL(query) {
             } catch (e) {
                 console.error(e);
             }
-        });
+        })
+            .catch(e => {
+                throw new Error(e);
+            })
 
         while (!finished) {
             await new Promise(r => setTimeout(r, 500)).catch(console.error);
@@ -76,16 +76,22 @@ async function GenerateURL(query) {
         const queryURL = `https://www.youtube.com/results?search_query=${localQuery}`;
 
         let data = null;
-        request(queryURL, (error, response, body) => {
-            if (error != null && error != false) {
-                throw new Error(`Unable to fetch URL from query: ${error}`);
+
+        axios.get(queryURL).then(res => {
+            let body = res.data;
+            try {
+                let firstVideoIndex = body.toLowerCase().indexOf('watch?v=');
+                const videoId = body.substr(firstVideoIndex, firstVideoIndex + 19);
+                const link = `https://www.youtube.com/${videoId.split('"')[0].split("\\u0026")[0]}`;
+                console.log(`Link: ${link}`);
+                data = link;
+            } catch (e) {
+                console.error(e);
             }
-            let firstVideoIndex = body.toLowerCase().indexOf('watch?v=');
-            const videoId = body.substr(firstVideoIndex, firstVideoIndex + 19);
-            const link = `https://www.youtube.com/${videoId.split('"')[0].split("\\u0026")[0]}`;
-            console.log(`Link: ${link}`);
-            data = link;
-        });
+        })
+            .catch(e => {
+                throw new Error(e);
+            })
 
         while (!data) {
             await new Promise(r => setTimeout(r, 500)).catch(console.error);
@@ -101,17 +107,11 @@ async function GenerateURL(query) {
  * @param {number} duration Seconds
  */
 async function DisplayDuration(duration) {
-    let hours = 0;
-    let minutes = 0;
-    let seconds = duration;
-    while (seconds >= 60) {
-        seconds = seconds - 60;
-        minutes++;
-    }
-    while (minutes >= 60) {
-        minutes = minutes - 60;
-        hours++;
-    }
+    let minutes = Math.floor(duration / 60);
+    let seconds = duration - (minutes * 60);
+    let hours = Math.floor(minutes / 60);
+    minutes = minutes - (hours * 60);
+
     if (hours > 0) {
         return `${hours}h:${minutes}m:${(Math.round(seconds) < 10) ? `0${Math.round(seconds)}s` : Math.round(seconds)}s`;
     } else {
@@ -127,20 +127,20 @@ class command {
 
         this.name = "play";
         this.description = "Plays a YouTube video using a URL or search query.";
-        this.options = [
-            {
-                name: "url",
-                description: "A link to a public or unlisted YouTube video",
-                required: false,
-                type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-            },
-            {
-                name: "query",
-                description: "Search terms for a YouTube video",
-                required: false,
-                type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-            }
-        ];
+        // this.options = [
+        //     {
+        //         name: "url",
+        //         description: "A link to a public or unlisted YouTube video",
+        //         required: false,
+        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+        //     },
+        //     {
+        //         name: "query",
+        //         description: "Search terms for a YouTube video",
+        //         required: false,
+        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+        //     }
+        // ];
     }
 
     /**
@@ -179,7 +179,7 @@ class command {
                     })
                         .catch(console.error);
                 });
-                subscription = new Subscription(message, voice, vc, null, null); // both callbacks are set in a few lines
+                subscription = new Subscription(client, message, voice, vc, null, null); // both callbacks are set in a few lines
             }
         } else {
             throw new Error(`Unable to join **null** voice channel`);
@@ -245,22 +245,18 @@ class command {
                 } else if (url !== null) {
                     // Playlist
                     console.log("Attempting to enqueue playlist...");
+                    let result = await subscription.playlistEnqueue(message, url)
+                        .catch(console.error);
                     let duration = 0;
-                    for (let x = 0; x < url.length; x++) {
-                        console.log(`Attempting to enqueue: ${url[x]}`);
-                        await getInfo(url[x])
-                            .then(info => {
-                                let track = new Track(url[x], member, info);
-                                subscription.playlistEnqueue(track);
-                                duration = duration + parseInt(info.videoDetails.lengthSeconds);
-                            })
-                            .catch(console.error);
+                    if (result) {
+                        duration = result['duration'];
                     }
-                    console.log(`Duration of playlist: ${duration}`);
                     try {
                         embed(client, async embed => {
                             embed.title = "Playlist Added to Queue";
-                            let dur = await DisplayDuration(duration);
+                            let dur = await DisplayDuration(duration)
+                                .catch(console.error);
+                            console.log(`\n\nDuration: ${dur}\t${duration}`);
                             embed.description = `${args.join(' ')}\n\`Requested by: ${member.user.tag || 'Unknown'}\`\n\`Duration: ${dur}\``;
                             embed.footer.text = `Use ${this.guildInfo.Get('prefix')}queue to view the queue`;
                             channel.send({
@@ -269,7 +265,7 @@ class command {
                                 .catch(console.error);
                         })
                     } catch (err) {
-                        console.log(err);
+                        throw new Error(err);
                     }
                 } else {
                     console.error(`Unable to generate url for ${args.join(' ')}`);
