@@ -1,5 +1,9 @@
 # Homies Bot#1202
 
+```
+Current release: v0.4.1
+```
+
 This bot is limited to authorized servers only, To request access, join the [Homies Bot discord server](https://discord.gg/7YbWnNpsU5) and DM @phxntxsmic#2022
 
 # Information
@@ -31,7 +35,3 @@ _** Most likely to be removed as no current features require these permissions._
 
 # Contact
 [Discord](https://discord.gg/7YbWnNpsU5)
-
-```
-Current release: v0.4.1
-```
