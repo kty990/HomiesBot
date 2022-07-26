@@ -18,10 +18,13 @@ const aliases = { // also edit the aliases in the aliases.js command module
     "cmds": ["commands"],
     "aliases": ["als"],
     "help": [],
+    "coinflip": ["flipcoin", "flipacoin"],
     "info": [],
     "serverinfo": [],
     "settings": ["alter", "change"],
     "cah": [],
+    "password": ["pw"],
+    "uno": []
 };
 
 /**
@@ -81,75 +84,6 @@ class CommandHandler {
                 }
             }
         });
-
-        // client.on("interactionCreate", async interaction => {
-        //     if (!interaction.isCommand()) return;
-
-        //     try {
-        //         const member = interaction.member;
-        //         const author = interaction.user;
-        //         const channel = interaction.channel;
-        //         const guild = interaction.guild || channel.guild;
-        //         const { commandName, options } = interaction;
-
-        //         let replied = false;
-
-        //         await interaction.deferReply({
-        //             ephemeral: true,
-        //         }).catch(console.error);
-
-        //         let response;
-
-        //         if (this.LoadedCommands[commandName].isMusic) {
-        //             let musicData = { "subscription": this.subscription, "voice": this.voiceConnection };
-        //             response = await this.LoadedCommands[commandName].slashExe(musicData, interaction, interaction.client)
-        //                 .catch(console.error);
-        //             if (typeof response === "object") {
-        //                 this.subscription = response["subscription"];
-        //                 this.voiceConnection = response["voice"];
-        //             }
-        //         } else {
-        //             response = await this.LoadedCommands[commandName].slashExe(interaction, interaction.client)
-        //                 .catch(console.error);
-        //         }
-
-        //         if (typeof response === "string") {
-        //             if (!replied) {
-        //                 replied = true;
-        //                 interaction.editReply({
-        //                     content: response,
-        //                 })
-        //                     .catch(console.error);
-        //             }
-        //         }
-
-        //         if (!replied) {
-        //             replied = true;
-        //             interaction.editReply({
-        //                 content: `${commandName} used`,
-        //             })
-        //                 .catch(console.error);
-        //         }
-        //     } catch (err) {
-        //         embed(this.client, e => {
-        //             e.color = 0xeb4034;
-        //             e.description = `${err}`;
-        //             e.title = `Could not run ${commandName}`;
-        //             e.footer.text = "An error occured.";
-        //             message.channel.send({
-        //                 embeds: [e],
-        //             })
-        //                 .catch(console.error);
-        //         });
-        //         if (!replied) {
-        //             replied = true;
-        //             interaction.editReply({
-        //                 content: `An error occured. See error message output if provided for more information.`,
-        //             })
-        //                 .catch(console.error);
-        //         }
-        //     }
-        // });
     };
 
     /**
@@ -204,6 +138,7 @@ class CommandHandler {
      * @returns boolean
     */
     async Run(message, cmd, args) {
+        console.debug("Trying to run a command");
         let command = this.LoadedCommands[cmd.toLowerCase()];
         let Alias = IsAliasOf(cmd.toLowerCase());
         if (command !== null && command !== undefined) {
