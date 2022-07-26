@@ -2,6 +2,7 @@
 
 const { createAudioResource, createAudioPlayer, AudioPlayerStatus, NoSubscriberBehavior } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
+const { getInfo } = require('ytdl-core');
 const { GuildMember } = require('discord.js');
 const embed = require('../homiesEmbed');
 
@@ -24,14 +25,14 @@ class Timer {
         this.running = true;
         setTimeout(() => {
             if (!this.running) {
-                console.log("RETURN 1");
+                console.log("Track no longer running, pausing timer.");
                 return;
             }
             this.left = this.left - 0.1;
             if (this.left <= 0) {
                 this.left = 0;
                 this.running = false;
-                console.log("RETURN 2");
+                console.log("Track timer has finished, terminating timer.");
                 return;
             }
             this.start(null, true);
@@ -63,6 +64,7 @@ class Track {
         this.url = url;
         this.requester = requester;
         this.timer = new Timer(0); // will be set on start
+        this.audioResource = null; // set on createAudioResource() call.
 
         this.info = info;
         this.title = info.videoDetails.title;
@@ -89,7 +91,7 @@ class Track {
             const stream = ytdl(this.url, { filter: 'audioonly' });
             if (stream) {
                 let result = createAudioResource(stream);
-                this.currentResource = result;
+                this.audioResource = result;
                 resolve(result);
             }
             else reject(new Error("Unable to load stream data."));
@@ -115,7 +117,7 @@ class Subscription {
     */
 
 
-    constructor(message, voiceConnection, voiceChannel, onPlay, onAdd) {
+    constructor(client, message, voiceConnection, voiceChannel, onPlay, onAdd) {
         if (voiceConnection === null || voiceConnection === undefined) {
             throw new Error("Unable to initialize Subscription for null or undefined connection.");
         }
@@ -124,9 +126,11 @@ class Subscription {
         this.readyLock = false;
         this.queueLock = false;
         this.queue = [];
+        this.queueLength = 0;
         this.queueLoop = false;
         this.currentTrack = null;
         this.onPlay = onPlay;
+        this.client = client;
         this.onAdd = onAdd;
         this.audioPlayer = createAudioPlayer({
             behaviors: {
@@ -181,16 +185,98 @@ class Subscription {
      * 
      * @param {Track} track 
      */
-    enqueue(track) {
+    enqueue(track, skip) {
         if (this.queue === null) return;
         this.queue.push(track);
+        if (!skip) this.queueLength++;
         this.processQueue();
     }
 
-    playlistEnqueue(track) {
+    /**
+     * This method is not working, requires check for tracks, which resolves when check returns true
+     * 
+     * @param {*} member 
+     * @param {*} URLs 
+     * @returns Promise
+     */
+    DevelopPlaylist(member, URLs) {
+        return new Promise(async (resolve, reject) => {
+            let tracks = {};
+            let duration = [];
+
+            function equates() {
+                let result = false;
+                for (let x = 0; x < URLs.length; x++) {
+                    if (tracks[`${x}`] === undefined) {
+                        result = true;
+                        break;
+                    }
+                }
+                return result;
+            }
+
+            /**
+             * 
+             * Recursive function that waits 
+             * @param ms
+             * miliseconds and checks whether
+             * tracks.length == URLs.length . If it is true,
+             * @param finishedCallback
+             * is called and the function is terminated.
+             */
+            function WaitUntil(ms, finishedCallback) {
+                setTimeout(() => {
+                    if (equates()) {
+                        WaitUntil(ms, finishedCallback);
+                    } else {
+                        finishedCallback();
+                        return;
+                    }
+                }, ms);
+            }
+            for (let x = 0; x < URLs.length; x++) {
+                let url = URLs[x];
+                console.log(`Looking at ${url}\n`);
+                if (typeof url === "string") {
+                    getInfo(url)
+                        .then(info => {
+                            duration.push(parseInt(info.videoDetails.lengthSeconds));
+                            console.log(x);
+                            let track = new Track(url, member, info);
+                            tracks[`${x}`] = track;
+                        })
+                        .catch(console.error);
+                }
+
+            }
+            WaitUntil(300, () => {
+                let d = 0;
+                for (let x = 0; x < duration.length; x++) {
+                    d = d + duration[x];
+                }
+                resolve({
+                    "tracks": tracks,
+                    "duration": d,
+                });
+            });
+        });
+    }
+
+    async playlistEnqueue(message, URLs) {
         if (this.queue === null) return;
-        this.queue.push(track);
+        let member = message.member;
+        let result = await this.DevelopPlaylist(member, URLs)
+            .catch(console.error);
+        let tracks = result['tracks'];
+        let duration = result['duration'];
+        for (let x = 0; x < URLs.length; x++) {
+            this.enqueue(tracks[`${x}`]);
+        }
+        console.log(`Attempting to process playlist queue`);
         this.processQueue(false, true);
+        return {
+            'duration': duration,
+        }
     }
 
     /**
@@ -289,11 +375,13 @@ class Subscription {
     Stop() {
         if (this.queue === null) return;
         try {
-            this.queueLock = true;
             this.queue = [];
+            if (this.currentTrack) {
+                this.currentTrack.timer.destroy();
+            }
             this.currentTrack = null;
             this.audioPlayer.stop(true);
-            this.currentTrack.timer.destroy();
+            console.log("Forced stop! @ musicHandler.js");
         } catch (e) {
             console.error(`Error at Subscription.Stop(): ${e}`);
         }
@@ -303,9 +391,23 @@ class Subscription {
      * 
      */
     SkipTrack() {
-        if (this.queue === null) return;
-        this.currentTrack.timer.stop();
-        this.processQueue(true);
+        if (this.queue === null) throw new Error("Unable to skip **null** track.");
+        if (this.currentTrack === null) throw new Error("Unable to skip **null** track.");
+        if (this.queue.length === 0) {
+            this.Stop();
+        };
+        if (this.currentTrack) {
+            this.currentTrack.timer.stop();
+        }
+        if (this.queue.length !== 0) {
+            this.processQueue(true, false);
+        }
+        // } else {
+        //     if (this.onEmpty) {
+        //         this.onEmpty();
+        //         console.log("---EMPTY QUEUE---");
+        //     }
+        // }
     }
 
     /**
@@ -357,6 +459,7 @@ class Subscription {
                 if (this.queue.length === 0 && !this.queueLock && (this.audioPlayer.state.status === AudioPlayerStatus.Idle || this.audioPlayer.state.status === AudioPlayerStatus.AutoPaused)) {
                     if (this.onEmpty) {
                         this.onEmpty();
+                        console.log("...EMPTY QUEUE...");
                     }
                 }
                 return;
