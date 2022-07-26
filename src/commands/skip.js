@@ -33,12 +33,12 @@ class command {
         const guild = message.guild;
         const channel = message.channel;
 
-        subscription.SkipTrack();
-
         channel.send({
             content: `**Skipped** ⏩`,
         })
             .catch(console.error);
+
+        subscription.SkipTrack();
 
         return {
             "subscription": subscription,
