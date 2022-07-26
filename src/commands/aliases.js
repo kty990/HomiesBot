@@ -14,10 +14,13 @@ const aliases = {
     "cmds": ["commands"],
     "aliases": ["als"],
     "help": [],
+    "coinflip": ["flipcoin", "flipacoin"],
     "info": [],
     "serverinfo": [],
     "settings": ["alter", "change"],
     "cah": [],
+    "password": ["pw"],
+    "uno": [],
 };
 
 
@@ -29,14 +32,14 @@ class command {
 
         this.name = "aliases";
         this.description = "In development";
-        this.options = [
-            {
-                name: "page",
-                description: "The page of aliases to display.",
-                required: false,
-                type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
-            }
-        ];
+        // this.options = [
+        //     {
+        //         name: "page",
+        //         description: "The page of aliases to display.",
+        //         required: false,
+        //         type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
+        //     }
+        // ];
     }
 
     /**
