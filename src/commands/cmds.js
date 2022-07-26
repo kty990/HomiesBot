@@ -1,6 +1,26 @@
 const embed = require('../homiesEmbed.js');
 const Discord = require('discord.js');
 
+const aliases = {
+    "play": ["p", "pl"],
+    "skip": ["s"],
+    "nowplaying": ["np"],
+    "resume": ["res", "r"],
+    "pause": ["pp"],
+    "join": ["enter", "fuckon", "waxon", "appear"],
+    "leave": ["fuckoff", "waxoff", "disappear"],
+    "queue": ["q"],
+    "say": [],
+    "cmds": ["commands"],
+    "aliases": ["als"],
+    "help": [],
+    "coinflip": ["flipcoin", "flipacoin"],
+    "info": [],
+    "serverinfo": [],
+    "settings": ["alter", "change"],
+    "cah": [],
+};
+
 const commands = [ // required to edit as more commands are added
     "play [url / query]",
     "skip",
@@ -15,12 +35,17 @@ const commands = [ // required to edit as more commands are added
     "say [message]",
     "cmds [page]",
     "aliases [page]",
-    "help",
+    "help [command name]",
+    "coinflip",
     "info (WIP)",
     "serverinfo (WIP)",
     "settings (WIP)",
     "cah (WIP)",
+    "password [length]",
+    "uno",
 ];
+
+
 
 
 class command {
@@ -31,14 +56,14 @@ class command {
 
         this.name = "cmds";
         this.description = "In development";
-        this.options = [
-            {
-                name: "page",
-                description: "The page of commands to display.",
-                required: false,
-                type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
-            }
-        ];
+        // this.options = [
+        //     {
+        //         name: "page",
+        //         description: "The page of commands to display.",
+        //         required: false,
+        //         type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
+        //     }
+        // ];
     }
 
     /**
