@@ -8,14 +8,14 @@ class command {
 
         this.name = "say";
         this.description = "Echos the provided message";
-        this.options = [
-            {
-                name: "message",
-                description: "The message the bot should echo.",
-                required: true,
-                type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-            }
-        ];
+        // this.options = [
+        //     {
+        //         name: "message",
+        //         description: "The message the bot should echo.",
+        //         required: true,
+        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+        //     }
+        // ];
     }
 
     /**
@@ -31,9 +31,11 @@ class command {
             content: `${args.join(" ")}`
         })
             .then(msg => {
-                if (msg.channel.type === "GUILD_NEWS") {
+                if (msg.channel.type === Discord.ChannelType.GuildNews) {
                     msg.crosspost()
                         .catch(console.error);
+                } else {
+                    console.log(msg.channel);
                 }
             })
             .catch(console.error)
