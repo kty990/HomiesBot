@@ -31,3 +31,7 @@ _** Most likely to be removed as no current features require these permissions._
 
 # Contact
 [Discord](https://discord.gg/7YbWnNpsU5)
+
+```
+Current release: v0.4.1
+```
