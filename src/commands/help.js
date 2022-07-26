@@ -57,6 +57,10 @@ const commands = { // required to edit as more commands are added
         "description": "Displays helpful information regarding the bot.",
         "syntax": null,
     },
+    "coinflip": {
+        "description": "",
+        "syntax": null,
+    },
     "info (WIP)": {
         "description": "IN DEVELOPMENT",
         "syntax": null,
@@ -73,7 +77,54 @@ const commands = { // required to edit as more commands are added
         "description": "IN DEVELOPMENT",
         "syntax": null,
     },
+    "password": {
+        "description": "Sends you a randomly generated password.",
+        "syntax": "length",
+    },
+    "uno": {
+        "description": "Creates an UNO game, requires players to react to join. 30 second window to join before the game auto-starts. (Needs 3 players MINIMUM) | IN DEVELOPMENT",
+        "syntax": null,
+    },
 };
+
+const aliases = {
+    "play": ["p", "pl"],
+    "skip": ["s"],
+    "nowplaying": ["np"],
+    "resume": ["res", "r"],
+    "pause": ["pp"],
+    "join": ["enter", "fuckon", "waxon", "appear"],
+    "leave": ["fuckoff", "waxoff", "disappear"],
+    "queue": ["q"],
+    "say": [],
+    "cmds": ["commands"],
+    "aliases": ["als"],
+    "help": [],
+    "coinflip": ["flipcoin", "flipacoin"],
+    "info": [],
+    "serverinfo": [],
+    "settings": ["alter", "change"],
+    "cah": [],
+    "password": ['pw'],
+    "uno": [],
+};
+
+/**
+ * Checks if the provided string is an alias of a valid command.
+ * 
+ * @param {string | null} cmd 
+ * @returns string | null
+ */
+function IsAliasOf(cmd) {
+    for (const [c, als] of Object.entries(aliases)) {
+        for (const [i, v] of Object.entries(als)) {
+            if (v === cmd) {
+                return c;
+            }
+        }
+    }
+    return null;
+}
 
 class command {
     constructor(guildInfo) {
@@ -97,8 +148,9 @@ class command {
 
         if (info_subject) {
             let data;
+            let alias = IsAliasOf(info_subject);
             for (const [key, value] of Object.entries(commands)) {
-                if (key.toLowerCase().substring(0, info_subject.length) === info_subject.toLowerCase()) {
+                if (key.toLowerCase().substring(0, info_subject.length) === info_subject.toLowerCase() || alias == key) {
                     data = {
                         "key": key,
                         "value": value,
