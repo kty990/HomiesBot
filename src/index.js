@@ -14,12 +14,12 @@ const { DatastoreHandler } = require('./Datastore.js');
 
 // ** Misc. Variables **
 
-var d = new Date();
-var botOnlineSince;
+const Intents = Discord.GatewayIntentBits;
+const Partials = Discord.Partials;
 
-const Intents = Discord.Intents;
 const client = new Discord.Client({
-    intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_VOICE_STATES],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction],//'MESSAGE', 'CHANNEL', 'REACTION'],
+    intents: [Intents.DirectMessages, Intents.DirectMessageReactions, Intents.GuildMessages, Intents.GuildMessageReactions, Intents.Guilds, Intents.MessageContent],//'DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS'],
 });
 
 const ConnectedGuilds = {};
@@ -43,7 +43,7 @@ function InitializeGuildData(guild) {
 }
 
 client.on("ready", () => {
-    client.user.setPresence({ activities: [{ name: 'in development' }], status: 'idle' });
+    client.user.setPresence({ activities: [{ name: 'in development', type: Discord.ActivityType.Playing }], status: 'idle' });
     console.log("Bot online");
 });
 
@@ -57,6 +57,11 @@ client.on("guildCreate", guild => {
 
 client.on('messageCreate', async (message) => {
     const guild = message.guild;
+
+    if (!guild) {
+        console.log("No guild found");
+        return;
+    };
 
     if (ConnectedGuilds[guild.id] == undefined || ConnectedGuilds[guild.id] == null) await InitializeGuildData(guild);
 
