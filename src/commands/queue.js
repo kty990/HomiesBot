@@ -6,17 +6,11 @@ const Discord = require('discord.js');
  * @param {number} duration Seconds
  */
 function DisplayDuration(duration) {
-    let hours = 0;
-    let minutes = 0;
-    let seconds = duration;
-    while (seconds >= 60) {
-        seconds = seconds - 60;
-        minutes++;
-    }
-    while (minutes >= 60) {
-        minutes = minutes - 60;
-        hours++;
-    }
+    let minutes = Math.floor(duration / 60);
+    let seconds = duration - (minutes * 60);
+    let hours = Math.floor(minutes / 60);
+    minutes = minutes - (hours * 60);
+
     if (hours > 0) {
         return `${hours}h:${minutes}m:${(seconds < 10) ? `0${seconds}` : seconds}s`;
     } else {
@@ -32,14 +26,14 @@ class command {
 
         this.name = "queue";
         this.description = "Shows the song queue for the current server.";
-        this.options = [
-            {
-                name: "page",
-                description: "The page of the queue to display.",
-                required: true,
-                type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
-            }
-        ];
+        // this.options = [
+        //     {
+        //         name: "page",
+        //         description: "The page of the queue to display.",
+        //         required: true,
+        //         type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
+        //     }
+        // ];
     }
 
     /**
@@ -68,19 +62,21 @@ class command {
 
         let playing = null;
         let totalDuration = 0;
+        let queue, data;
         if (subscription !== null && subscription !== undefined) {
-            let data = subscription.GetQueue();
-            let queue = data['queue'];
+            data = subscription.GetQueue();
+            queue = data['queue'];
             playing = data['playing'];
 
-            for (let i = (page - 1) * 5; i < queue.length; i++) {
-                if (i === page * 5) break;
+            for (let i = (page - 1) * 6; i < queue.length; i++) {
+                if (i === page * 6) break;
                 let track = queue[i];
                 DisplayQueue = DisplayQueue + `${i + 1}: [${(track.title.length <= 50) ? track.title : track.title.substring(0, 49).replace("[", "").replace("]", "")}](${track.url}) (${DisplayDuration(track.duration)}) : ${track.requester}\n`;
             }
 
-            for (let track in queue) {
-                totalDuration = totalDuration + track.duration;
+            for (let x = 0; x < queue.length; x++) {
+                let track = queue[x];
+                totalDuration = totalDuration + parseInt(track.duration);
             }
         }
 
@@ -93,7 +89,7 @@ class command {
 
         embed(client, embed => {
             if (playing !== null) {
-                embed.description = `**Playing now**\n[${(playing.title.length <= 50) ? playing.title : playing.title.substring(0, 49)}](${playing.url}) (${DisplayDuration(playing.duration)}) : ${playing.requester}`;
+                embed.description = `**Playing now**\n[${(playing.title.length <= 50) ? playing.title.replace("[", "").replace("]", "") : playing.title.substring(0, 49).replace("[", "").replace("]", "")}](${playing.url}) (${DisplayDuration(playing.duration)}) : ${playing.requester}`;
             } else {
                 embed.description = "**Playing now**\n[empty]";
             }
@@ -104,7 +100,7 @@ class command {
             });
             embed.fields.push({
                 name: "\u2800",
-                value: `\`Queue length: ${DisplayDuration(totalDuration)}\``,
+                value: `\`Queue duration: ${DisplayDuration(totalDuration)}\`\nQueue length: ${queue?.length || 0}`,
                 inline: false
             });
             embed.title = `${guild.name} Queue`;
