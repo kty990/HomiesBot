@@ -5,6 +5,8 @@ const { Guild } = require('discord.js');
 // ** Local Dependancies **
 
 const auth = require("../auth.json");
+const token = auth.token;
+const development_status = auth.development;
 
 // ** Modules **
 
@@ -19,7 +21,17 @@ const Partials = Discord.Partials;
 
 const client = new Discord.Client({
     partials: [Partials.Message, Partials.Channel, Partials.Reaction],//'MESSAGE', 'CHANNEL', 'REACTION'],
-    intents: [Intents.DirectMessages, Intents.DirectMessageReactions, Intents.GuildMessages, Intents.GuildMessageReactions, Intents.Guilds, Intents.MessageContent],//'DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS'],
+    intents: [
+        Intents.DirectMessages,
+        Intents.DirectMessageReactions,
+        Intents.GuildMessages,
+        Intents.GuildMessageReactions,
+        Intents.GuildMembers,
+        Intents.GuildPresences,
+        Intents.Guilds,
+        Intents.MessageContent,
+        Intents.GuildVoiceStates
+    ],//'DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS'],
 });
 
 const ConnectedGuilds = {};
@@ -43,13 +55,15 @@ function InitializeGuildData(guild) {
 }
 
 client.on("ready", () => {
-    client.user.setPresence({ activities: [{ name: 'in development', type: Discord.ActivityType.Playing }], status: 'idle' });
+    if (development_status == "false") {
+        client.user.setPresence({ activities: [{ name: 'the homies song!', type: Discord.ActivityType.Streaming, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley" }], status: 'idle' });
+    } else {
+        client.user.setPresence({ activities: [{ name: 'in development', type: Discord.ActivityType.Playing }], status: 'idle' });
+    }
     console.log("Bot online");
 });
 
-client.on("error", error => {
-    console.warn(`\n\n\nWARN: An unhandled error occured at client.on('error'):\n${error}\n\n`);
-});
+client.on("error", console.error);
 
 client.on("guildCreate", guild => {
     InitializeGuildData(guild);
@@ -82,4 +96,4 @@ client.on('messageCreate', async (message) => {
 
 });
 
-client.login(auth.token);
+client.login(token);
