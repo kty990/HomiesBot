@@ -1,27 +1,6 @@
 const embed = require('../homiesEmbed.js');
-const Discord = require('discord.js');
 
-const aliases = {
-    "play": ["p", "pl"],
-    "skip": ["s"],
-    "nowplaying": ["np"],
-    "resume": ["res", "r"],
-    "pause": ["pp"],
-    "join": ["enter", "fuckon", "waxon", "appear"],
-    "leave": ["fuckoff", "waxoff", "disappear"],
-    "queue": ["q"],
-    "say": [],
-    "cmds": ["commands"],
-    "aliases": ["als"],
-    "help": [],
-    "coinflip": ["flipcoin", "flipacoin"],
-    "info": [],
-    "serverinfo": [],
-    "settings": ["alter", "change"],
-    "cah": [],
-};
-
-const commands = [ // required to edit as more commands are added
+var commands = [ // required to edit as more commands are added
     "play [url / query]",
     "skip",
     "nowplaying",
@@ -33,19 +12,25 @@ const commands = [ // required to edit as more commands are added
     "queue [page]",
     "loopqueue",
     "say [message]",
+    "purge [count]",
     "cmds [page]",
     "aliases [page]",
     "help [command name]",
     "coinflip",
-    "info (WIP)",
-    "serverinfo (WIP)",
+    "info",
+    "serverinfo",
     "settings (WIP)",
     "cah (WIP)",
     "password [length]",
-    "uno",
-];
-
-
+    "bugs [page]",
+    "uno (WIP)",
+    "premove",
+    "gtw (WIP)"
+].sort((a, b) => {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+});
 
 
 class command {
@@ -72,7 +57,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(message, client, page) {
+    async exe(message, client, page) {
         if (page === null || page === undefined) {
             page = 1;
         }
