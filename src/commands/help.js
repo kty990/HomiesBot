@@ -42,8 +42,12 @@ const commands = { // required to edit as more commands are added
         "syntax": "page",
     },
     "say": {
-        "description": "Forces the bot to say the message provided.",
+        "description": "Forces the bot to say {message}.",
         "syntax": "message",
+    },
+    "purge": {
+        "description": "Deletes {count} messages in the channel this was used in.",
+        "syntax": "count",
     },
     "cmds": {
         "description": "Shows a list of commands (10 commands/page)",
@@ -58,15 +62,15 @@ const commands = { // required to edit as more commands are added
         "syntax": null,
     },
     "coinflip": {
-        "description": "",
+        "description": "Flips a coin. The result is either 'Heads' or 'Tails' with a 50-50 chance.",
         "syntax": null,
     },
-    "info (WIP)": {
-        "description": "IN DEVELOPMENT",
-        "syntax": null,
+    "info": {
+        "description": "Displays info about a user.",
+        "syntax": "user (optional)",
     },
-    "serverinfo (WIP)": {
-        "description": "IN DEVELOPMENT",
+    "serverinfo": {
+        "description": "Displays information about the current server.",
         "syntax": null,
     },
     "settings (WIP)": {
@@ -85,6 +89,22 @@ const commands = { // required to edit as more commands are added
         "description": "Creates an UNO game, requires players to react to join. 30 second window to join before the game auto-starts. (Needs 3 players MINIMUM) | IN DEVELOPMENT",
         "syntax": null,
     },
+    "bugs": {
+        "description": "Displays a list of all known bugs",
+        "syntax": "page",
+    },
+    "coup": {
+        "description": "IN DEVELOPMENT",
+        "syntax": null,
+    },
+    "premove": {
+        "description": "This ain't chess...",
+        "syntax": null,
+    },
+    "gtw": {
+        "description": "Try to guess the unscrambled version of the scrambled word | IN DEVELOPMENT",
+        "syntax": null,
+    }
 };
 
 const aliases = {
@@ -97,6 +117,7 @@ const aliases = {
     "leave": ["fuckoff", "waxoff", "disappear"],
     "queue": ["q"],
     "say": [],
+    "purge": [],
     "cmds": ["commands"],
     "aliases": ["als"],
     "help": [],
@@ -105,8 +126,10 @@ const aliases = {
     "serverinfo": [],
     "settings": ["alter", "change"],
     "cah": [],
-    "password": ['pw'],
+    "password": ["pw"],
+    "bugs": ["knownbugs", "bug"],
     "uno": [],
+    "coup": [],
 };
 
 /**
@@ -143,7 +166,7 @@ class command {
      * @param {*} client : Client
      * @param {string} info_subject 
     */
-    exe(message, client, info_subject) {
+    async exe(message, client, info_subject) {
         const prefix = this.guildInfo.Get('prefix');
 
         if (info_subject) {
