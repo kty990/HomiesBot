@@ -3,7 +3,7 @@
 const fs = require('fs'); // File I/O
 const embed = require('./homiesEmbed');
 
-const aliases = { // also edit the aliases in the aliases.js command module
+const aliases = {
     "play": ["p", "pl"],
     "skip": ["s"],
     "nowplaying": ["np"],
@@ -11,10 +11,9 @@ const aliases = { // also edit the aliases in the aliases.js command module
     "pause": ["pp"],
     "join": ["enter", "fuckon", "waxon", "appear"],
     "leave": ["fuckoff", "waxoff", "disappear"],
-    "shuffle": [],
-    "loopqueue": [],
     "queue": ["q"],
     "say": [],
+    "purge": [],
     "cmds": ["commands"],
     "aliases": ["als"],
     "help": [],
@@ -24,7 +23,12 @@ const aliases = { // also edit the aliases in the aliases.js command module
     "settings": ["alter", "change"],
     "cah": [],
     "password": ["pw"],
-    "uno": []
+    "bugs": ["knownbugs", "bug"],
+    "uno": [],
+    "coup": [],
+    "test": [],
+    "premove": [],
+    "gtw": ["guesstheword"],
 };
 
 /**
@@ -152,7 +156,23 @@ class CommandHandler {
                         console.log(`Command debug:\nVoice: ${returnData['voice']}\nSubscription: ${returnData["subscription"]}\n`);
                     }
                 } else {
-                    let result = command.exe(message, this.client, ...args);
+                    let result = command.exe(message, this.client, ...args).catch(err => {
+                        console.warn(`An error occured trying to run ${cmd}: \t\t ${err}`);
+                        embed(this.client, e => {
+                            e.color = 0xeb4034;
+                            if (`${err}`.length >= 1025) {
+                                e.description = `Error message too long to send`;
+                            } else {
+                                e.description = `${err}`;
+                            }
+                            e.title = `Could not run ${cmd.toLowerCase()}`;
+                            e.footer.text = "An error occured.";
+                            message.channel.send({
+                                embeds: [e],
+                            })
+                                .catch(console.error);
+                        });
+                    });
                 }
                 if (command.shouldDelete) {
                     message.delete()
@@ -188,7 +208,23 @@ class CommandHandler {
                         console.log(`Alias debug:\nVoice: ${returnData['voice']}\nSubscription: ${returnData["subscription"]}\n`);
                     }
                 } else {
-                    let result = command.exe(message, this.client, ...args);
+                    let result = command.exe(message, this.client, ...args).catch(err => {
+                        console.warn(`An error occured trying to run ${cmd}: \t\t ${err}`);
+                        embed(this.client, e => {
+                            e.color = 0xeb4034;
+                            if (`${err}`.length >= 1025) {
+                                e.description = `Error message too long to send`;
+                            } else {
+                                e.description = `${err}`;
+                            }
+                            e.title = `Could not run ${cmd.toLowerCase()}`;
+                            e.footer.text = "An error occured.";
+                            message.channel.send({
+                                embeds: [e],
+                            })
+                                .catch(console.error);
+                        });
+                    });
                 }
                 if (command.shouldDelete) {
                     message.delete()
