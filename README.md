@@ -12,6 +12,21 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 - This bot is occasionally online. No official hosting service has been selected for use.
 - Required permissions are listed below; permissions may change as the bot matures and the required permissions become known.
 
+
+# Dependencies
+
+- discord.js (REST, voice, discord.js)
+- axios
+- discord-api-types
+- ffmpeg, ffmpeg-static
+- libsodium-wrappers
+- node
+- oppuscript
+- play-dl
+
+*All other dependencies listed in package.json are no longer in use and should be removed.*
+*This will be addressed in the next patch*
+
 # Permissions
 
 _** Most likely to be removed as no current features require these permissions._
