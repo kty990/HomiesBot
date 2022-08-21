@@ -13,7 +13,7 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 - Required permissions are listed below; permissions may change as the bot matures and the required permissions become known.
 
 
-# Dependancies
+# Dependencies
 
 - discord.js (REST, voice, discord.js)
 - axios
@@ -24,7 +24,7 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 - oppuscript
 - play-dl
 
-*All other dependancies listed in package.json are no longer in use and should be removed.*
+*All other dependencies listed in package.json are no longer in use and should be removed.*
 *This will be addressed in the next patch*
 
 # Permissions
