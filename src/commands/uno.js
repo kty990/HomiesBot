@@ -5,7 +5,7 @@ const TESTING = true;
 
 
 /**
-* NEXT OBJECTIVE: Convert "run" into recursive function
+* NEXT OBJECTIVE: Re-add yellow number emojis (Had to delete and reupload to new server since nitro subscription is ending)
 */
 
 
@@ -154,47 +154,53 @@ class Player {
 
             let reactionCollector = this.handMessagePrivate.createReactionCollector({ filter: f, time: 30_000, dispose: true });
             reactionCollector.on('collect', (reaction, user) => {
-                if (user === this.client.user || this.currentPlayers.find(e => e.id === user.id)) return;
-                for (let x = 0; x < this.currentPlayers.length; x++) {
-                    let player = this.currentPlayers[x];
-                    if (player.member.id === user.id) {
-                        for (let y = 0; y < player.hand.cards.length; y++) {
-                            let card = player.hand.cards[y];
-                            if (reaction.emoji.id === card.id) {
-                                if (canBePlayed(card)) {
-                                    if (card.type === "colorchange") {
-                                        /**
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         *     THIS HAS TO BE FINISHED:
-                                         *          - Check reaction for color to switch to
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         * 
-                                         */
-                                    }
-                                    let hand_size = this.hand.cards.length;
-                                    resolve({
-                                        card: player.hand.cards.splice(y, 1)[0],
-                                        size: hand_size,
-                                    });
-                                } else {
-                                    this.handMessagePrivate.reactions.resolve(reaction).users.remove(user);
-                                }
+                /**
+                 * This should not be accessing this.currentPlayers... this.currentPlayers is only in the command class.
+                 * 
+                 * Instead, access the hand from this class, and the member from this class.
+                 */
+                if (user === this.client.user) return;
+
+                for (let y = 0; y < player.hand.cards.length; y++) {
+                    let card = this.hand.cards[y];
+                    if (reaction.emoji.id === card.id) {
+                        if (canBePlayed(card)) {
+                            if (card.type === "colorchange") {
+
+                                /**
+                                 * 
+                                 * 
+                                 * 
+                                 * 
+                                 * 
+                                 *     THIS HAS TO BE FINISHED:
+                                 *          - Check reaction for color to switch to
+                                 * 
+                                 *      ALSO HAS TO BE DONE FOR +4
+                                 * 
+                                 * 
+                                 * 
+                                 * 
+                                 * 
+                                 *   STEPS:
+                                 *      1. Get color of the reaction
+                                 *      2. Create new card obj with the correct color
+                                 *      3. Remove this card from the player's hand
+                                 *      4. Resolve the new card
+                                 * 
+                                 * 
+                                 * 
+                                 */
                             }
+                            let hand_size = this.hand.cards.length;
+                            resolve({
+                                card: this.hand.cards.splice(y, 1)[0],
+                                size: hand_size,
+                            });
+                        } else {
+                            this.handMessagePrivate.reactions.resolve(reaction).users.remove(user);
                         }
                     }
-
                 }
 
             });
