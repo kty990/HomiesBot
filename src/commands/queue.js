@@ -26,14 +26,8 @@ class command {
 
         this.name = "queue";
         this.description = "Shows the song queue for the current server.";
-        // this.options = [
-        //     {
-        //         name: "page",
-        //         description: "The page of the queue to display.",
-        //         required: true,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
-        //     }
-        // ];
+        this.options = [];
+        this.aliases = ['q'];
     }
 
     /**
@@ -42,7 +36,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(musicData, message, client, ...args) {
+    async exe(musicData, message, client, ...args) {
         let voice = musicData['voice'];
         let subscription = musicData['subscription'];
 
