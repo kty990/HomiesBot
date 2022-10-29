@@ -2,7 +2,7 @@ const embed = require('../homiesEmbed.js');
 const { Track, Subscription } = require('../music/musicHandler');
 
 const axios = require('axios');
-const { getInfo } = require('ytdl-core');
+const { video_basic_info } = require('play-dl');
 const Discord = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
 
@@ -127,20 +127,8 @@ class command {
 
         this.name = "play";
         this.description = "Plays a YouTube video using a URL or search query.";
-        // this.options = [
-        //     {
-        //         name: "url",
-        //         description: "A link to a public or unlisted YouTube video",
-        //         required: false,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-        //     },
-        //     {
-        //         name: "query",
-        //         description: "Search terms for a YouTube video",
-        //         required: false,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-        //     }
-        // ];
+        this.options = [];
+        this.aliases = ["p", "pl"];
     }
 
     /**
@@ -182,6 +170,7 @@ class command {
                 subscription = new Subscription(client, message, voice, vc, null, null); // both callbacks are set in a few lines
             }
         } else {
+            console.error(`vc: ${vc}`);
             throw new Error(`Unable to join **null** voice channel`);
         }
 
@@ -236,7 +225,7 @@ class command {
                 console.log(`URL: ${url}`);
                 if (typeof url === 'string') {
                     // Single video
-                    getInfo(url)
+                    video_basic_info(url)
                         .then(info => {
                             let track = new Track(url, member, info);
                             subscription.enqueue(track);
