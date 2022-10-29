@@ -10,14 +10,7 @@ class command {
         this.name = "loopqueue";
         this.description = "In development";
         this.options = [];
-        // this.options = [
-        //     {
-        //         name: "url",
-        //         description: "A link to a public or unlisted YouTube video",
-        //         required: false,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-        //     }
-        // ];
+        this.aliases = [];
     }
 
     /**
@@ -26,7 +19,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(musicData, message, client, args) {
+    async exe(musicData, message, client, args) {
         let voice = musicData['voice'];
         let subscription = musicData['subscription'];
 
