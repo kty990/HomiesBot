@@ -8,14 +8,8 @@ class command {
 
         this.name = "say";
         this.description = "Echos the provided message";
-        // this.options = [
-        //     {
-        //         name: "message",
-        //         description: "The message the bot should echo.",
-        //         required: true,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-        //     }
-        // ];
+        this.options = [];
+        this.aliases = [];
     }
 
     /**
@@ -24,7 +18,7 @@ class command {
      * @param {*} client *unused*
      * @param {string} args 
      */
-    exe(message, client, ...args) {
+    async exe(message, client, ...args) {
         let d = new Date();
         const channel = message.channel;
         channel.send({
