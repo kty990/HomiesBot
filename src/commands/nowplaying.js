@@ -26,6 +26,7 @@ class command {
         this.name = "nowplaying";
         this.description = "Shows information on the currently playing song.";
         this.options = [];
+        this.aliases = ["np"];
     }
 
     /**
@@ -34,7 +35,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(musicData, message, client, args) {
+    async exe(musicData, message, client, args) {
         let voice = musicData['voice'];
         let subscription = musicData['subscription'];
 
