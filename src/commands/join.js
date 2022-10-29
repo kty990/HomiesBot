@@ -11,6 +11,7 @@ class command {
         this.name = "join";
         this.description = "Joins a voice channel, unless the bot is already connected to a voice channel.";
         this.options = [];
+        this.aliases = ["enter", "fuckon", "waxon", "appear"];
     }
 
     /**
@@ -19,7 +20,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(musicData, message, client, args) {
+    async exe(musicData, message, client, args) {
         let voice = musicData['voice'];
         let subscription = musicData['subscription'];
 
