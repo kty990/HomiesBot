@@ -1,32 +1,58 @@
 const embed = require('../homiesEmbed.js');
+const fs = require('fs');
+const { directories } = require('../cmd_dir.json')
 
-const aliases = {
-    "play": ["p", "pl"],
-    "skip": ["s"],
-    "nowplaying": ["np"],
-    "resume": ["res", "r"],
-    "pause": ["pp"],
-    "join": ["enter", "fuckon", "waxon", "appear"],
-    "leave": ["fuckoff", "waxoff", "disappear"],
-    "queue": ["q"],
-    "say": [],
-    "purge": [],
-    "cmds": ["commands"],
-    "aliases": ["als"],
-    "help": [],
-    "coinflip": ["flipcoin", "flipacoin"],
-    "info": [],
-    "serverinfo": [],
-    "settings": ["alter", "change"],
-    "cah": [],
-    "password": ["pw"],
-    "bugs": ["knownbugs", "bug"],
-    "uno": [],
-    "coup": [],
-    "premove": [],
-    "gtw": ["guesstheword"],
-};
+class command_storage {
 
+    /**
+     * Stores all commands for aliases reference
+     * @param {command} cmd 
+     */
+    constructor(cmd) {
+        this.LoadedCommands = {};
+        this.command = cmd;
+        this.stored_length = 0;
+    }
+
+    /**
+     * Initializes the CommandHandler with command data.
+     * 
+     * @param {*} guildInfo Datastore instance
+     * 
+     * @returns void
+     */
+    Initialize(guildInfo) {
+        this.guildInfo = guildInfo;
+
+        for (let s = 0; s < directories.length; s++) {
+            let curr = directories[s];
+
+            console.log(__dirname);
+
+            let files;
+            if (curr === "commands") {
+                files = fs.readdirSync(__dirname);
+            } else {
+                files = fs.readdirSync(__dirname + curr.replace("commands\\", "\\"))
+            }
+
+
+            files.forEach(file => {
+                let filename = file.split('.');
+                if (filename[1] == 'js') {
+                    if (filename[0] == "aliases") {
+                        // Don't want infinite loop/error
+                        this.LoadedCommands["aliases"] = this.command;
+                    } else {
+                        const { command } = require(`..\\${curr}\\${filename[0]}.js`);
+                        this.LoadedCommands[filename[0]] = new command(guildInfo);
+                    }
+                    this.stored_length++;
+                }
+            });
+        }
+    }
+}
 
 class command {
     constructor(guildInfo) {
@@ -36,14 +62,11 @@ class command {
 
         this.name = "aliases";
         this.description = "In development";
-        // this.options = [
-        //     {
-        //         name: "page",
-        //         description: "The page of aliases to display.",
-        //         required: false,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
-        //     }
-        // ];
+        this.options = [];
+        this.aliases = ["als"];
+
+        this.storage = new command_storage(this);
+        this.storage.Initialize(guildInfo);
     }
 
     /**
@@ -56,7 +79,7 @@ class command {
         if (page === null || page === undefined) {
             page = 1;
         }
-        if (page * 10 > Object.entries(aliases).length) {
+        if (page * 10 > this.storage.stored_length) {
             embed(client, myEmbed => {
                 myEmbed.title = `Aliases Page ${page}`;
                 myEmbed.description = "[empty]";
@@ -69,25 +92,30 @@ class command {
             });
             return;
         }
+
         if (page <= 0) page = 1;
         var count = 0;//(page == 1) ? 0 : (page - 1) * 10;
         var alliases = "";
-        for (const [command, allias] of Object.entries(aliases)) {
 
+        for (const [cmd, value] of Object.entries(this.storage.LoadedCommands)) {
+            let aliases = value.aliases;
 
             // Choice 1
-            if (allias == null || allias.length == 0 || aliases == undefined) {
-                alliases = alliases + `${this.guildInfo.Get('prefix')}${command} : **n/a**\n`;
+            if (aliases.length == 0) {
+                alliases = alliases + `${this.guildInfo.Get('prefix')}${cmd} : **n/a**\n`;
                 continue;
             }
             // Choice 2 is to put [empty] in place of the allias(es)
             count++;
             if (count > ((page - 1) * 10) && count < (page * 10)) {
-                var newallias = `${this.guildInfo.Get('prefix')}${command} : \`${this.guildInfo.Get('prefix')}${allias.join(", " + this.guildInfo.Get('prefix'))}\``;
+                console.log(`aliases: ${aliases}`);
+                var newallias = `${this.guildInfo.Get('prefix')}${cmd} : \`${this.guildInfo.Get('prefix')}${aliases.join(", " + this.guildInfo.Get('prefix'))}\``;
                 alliases = alliases + newallias + "\n";
             } else if (count >= (page * 10)) {
                 break;
             }
+
+
         }
 
         if (alliases == "") {
@@ -96,7 +124,7 @@ class command {
 
         let d = new Date();
 
-
+        console.log(`${alliases.length}\n${alliases}`);
         embed(client, myEmbed => {
             myEmbed.title = `Aliases Page ${page}`;
             myEmbed.description = alliases;
@@ -115,54 +143,7 @@ class command {
      * 
      * @returns Promise
      */
-    slashExe(interaction, client) {
-        return new Promise((resolve, reject) => {
-            const { options } = interaction;
-            let page = options.getInteger("page", false);
-
-            const channel = interaction.channel;
-
-            if (page === null || page === undefined) {
-                page = 1;
-            }
-            if (page <= 0) page = 1;
-            let count = 0;
-            let alliases = "";
-            for (const [command, allias] of Object.entries(aliases)) {
-
-                // Choice 1
-                if (allias == null || allias.length == 0) {
-                    alliases = alliases + "n/a\n";
-                    continue;
-                }
-                // Choice 2 is to put [empty] in place of the allias(es)
-                count++;
-                if (count > (page - 1) * 10 && count < page * 10) {
-                    let newallias = `${this.guildInfo.Get('prefix')}${command} : \`${this.guildInfo.Get('prefix')}${allias.join(", " + this.guildInfo.Get('prefix'))}\``;
-                    alliases = alliases + newallias + "\n";
-                } else if (count > page * 10) {
-                    break;
-                }
-            }
-
-            if (alliases == "") {
-                alliases = "[empty]";
-            }
-
-            let d = new Date();
-
-
-            embed(client, myEmbed => {
-                myEmbed.title = "Aliases";
-                myEmbed.description = alliases;
-                myEmbed.footer.text = `Say ${this.guildInfo.Get('prefix')}aliases [page number]`;
-                channel.send({
-                    embeds: [myEmbed],
-                }, d.toISOString());
-            });
-            resolve(null);
-        })
-    }
+    slashExe(interaction, client) { }
 }
 
 

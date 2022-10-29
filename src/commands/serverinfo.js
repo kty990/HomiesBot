@@ -10,6 +10,7 @@ class command {
         this.name = "serverinfo";
         this.description = "In development";
         this.options = [];
+        this.aliases = [];
     }
 
     /**

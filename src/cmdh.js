@@ -3,67 +3,7 @@
 const fs = require('fs'); // File I/O
 const embed = require('./homiesEmbed');
 
-const aliases = {
-    "play": ["p", "pl"],
-    "skip": ["s"],
-    "nowplaying": ["np"],
-    "resume": ["res", "r"],
-    "pause": ["pp"],
-    "join": ["enter", "fuckon", "waxon", "appear"],
-    "leave": ["fuckoff", "waxoff", "disappear"],
-    "queue": ["q"],
-    "say": [],
-    "purge": [],
-    "cmds": ["commands"],
-    "aliases": ["als"],
-    "help": [],
-    "coinflip": ["flipcoin", "flipacoin"],
-    "info": [],
-    "serverinfo": [],
-    "settings": ["alter", "change"],
-    "cah": [],
-    "password": ["pw"],
-    "bugs": ["knownbugs", "bug"],
-    "uno": [],
-    "coup": [],
-    "test": [],
-    "premove": [],
-    "gtw": ["guesstheword"],
-};
-
-/**
- * Checks if the provided string is an alias of a valid command.
- * 
- * @param {string | null} cmd 
- * @returns string | null
- */
-function IsAliasOf(cmd) {
-    for (const [c, als] of Object.entries(aliases)) {
-        for (const [i, v] of Object.entries(als)) {
-            if (v === cmd) {
-                return c;
-            }
-        }
-    }
-    return null;
-}
-
-function unregisterCommands(commands, callback) {
-    commands.fetch().then(collection => {
-        for (const [snowflake, cmd] of collection.entries()) {
-            console.log(`Attempting to unregister:\nSnowflake: ${snowflake}\t\tCmd: ${cmd}\n`);
-            commands?.delete(cmd.id)
-                .catch(console.error);
-        }
-        callback();
-        return;
-    })
-        .catch(err => {
-            console.error(err);
-            callback();
-            return;
-        });
-}
+const { directories } = require('./cmd_dir.json')
 
 class CommandHandler {
     constructor(client, guild) {
@@ -99,15 +39,44 @@ class CommandHandler {
      */
     Initialize(guildInfo) {
         this.guildInfo = guildInfo;
-        let files = fs.readdirSync(__dirname + "/commands");
 
-        files.forEach(file => {
-            let filename = file.split('.');
-            if (filename[1] == 'js') {
-                const { command } = require(`./commands/${filename[0]}.js`);
-                this.LoadedCommands[filename[0]] = new command(guildInfo);
+        for (let s = 0; s < directories.length; s++) {
+            let curr = directories[s];
+
+            let files = fs.readdirSync(__dirname + "\\" + curr);
+
+            files.forEach(file => {
+                let filename = file.split('.');
+                if (filename[1] == 'js') {
+                    const { command } = require(`./${curr}/${filename[0]}.js`);
+                    this.LoadedCommands[filename[0]] = new command(guildInfo);
+                }
+            });
+        }
+
+
+    }
+
+    /**
+    * Checks if the provided string is an alias of, or the name of, a valid command.
+    * 
+    * @param {*} cmd 
+    * @returns string | null
+    */
+    IsAliasOf(cmd) {
+        for (const [key, command] of Object.entries(this.LoadedCommands)) {
+            if (key.toLowerCase().substring(0, cmd.length) == cmd.toLowerCase()) {
+                return key
+            } else {
+                for (let x = 0; x < command.aliases.length; x++) {
+                    let curr = command.aliases[x];
+                    if (curr.toLowerCase().substring(0, cmd.length) == cmd.toLowerCase()) {
+                        return key
+                    }
+                }
             }
-        });
+        }
+        return null;
     }
 
     /**
@@ -129,7 +98,7 @@ class CommandHandler {
      */
     Exists(cmd) {
         return (this.LoadedCommands[cmd.toLowerCase()] !== null &&
-            this.LoadedCommands[cmd.toLowerCase()] !== undefined) || IsAliasOf(cmd.toLowerCase()) !== null;
+            this.LoadedCommands[cmd.toLowerCase()] !== undefined) || this.IsAliasOf(cmd.toLowerCase()) !== null;
     }
 
     /**
@@ -144,7 +113,7 @@ class CommandHandler {
     async Run(message, cmd, args) {
         console.debug("Trying to run a command");
         let command = this.LoadedCommands[cmd.toLowerCase()];
-        let Alias = IsAliasOf(cmd.toLowerCase());
+        let Alias = this.IsAliasOf(cmd.toLowerCase());
         if (command !== null && command !== undefined) {
             try {
                 if (command.isMusic === true) {

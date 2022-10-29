@@ -1,7 +1,3 @@
-/**
-* This command needs to be optimized
-*/
-
 function isInt(value) {
     try {
         let v = parseInt(value);
@@ -23,6 +19,7 @@ class command {
         this.name = "purge";
         this.description = "In Development";
         this.options = [];
+        this.aliases = [];
     }
 
     /**

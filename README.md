@@ -1,10 +1,10 @@
 # Homies Bot#1202
 
 ```
-Current release: v0.5.1
+Current release: v0.5.5
 ```
 
-This bot is limited to authorized servers only, To request access, join the [Homies Bot discord server](https://discord.gg/7YbWnNpsU5) and DM @phxntxsmic#2022
+This bot is limited to authorized servers only, To request access, join the [Homies Bot discord server](https://discord.gg/7YbWnNpsU5) and DM @phxntxsmic#8610
 
 # Information
 
@@ -23,6 +23,7 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 - node
 - oppuscript
 - play-dl
+- vm2
 
 *All other dependencies listed in package.json are no longer in use and should be removed.*
 *This will be addressed in the next patch*
@@ -50,3 +51,6 @@ _** Most likely to be removed as no current features require these permissions._
 
 # Contact
 [Discord](https://discord.gg/7YbWnNpsU5)
+
+# Future Changes Roadmap
+[Trello](https://trello.com/invite/b/hTCYYteO/ATTIb8cb2a2fb5324b434d2eac137d3c35c3BA4D58D1/homies-bot)

@@ -28,6 +28,7 @@ class command {
         this.name = "bugs";
         this.description = "In Development";
         this.options = [];
+        this.aliases = ["knownbugs", "bug"];
     }
 
     /**

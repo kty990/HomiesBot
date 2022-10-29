@@ -75,6 +75,7 @@ class command {
         this.name = "info";
         this.description = "In development";
         this.options = [];
+        this.aliases = [];
     }
 
     /**

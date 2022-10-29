@@ -10,6 +10,7 @@ class command {
         this.name = "premove";
         this.description = "Sends the 'premove' screenshot";
         this.options = [];
+        this.aliases = [];
     }
 
     /**

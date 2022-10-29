@@ -10,6 +10,7 @@ class command {
         this.name = "shuffle";
         this.description = "In development";
         this.options = [];
+        this.aliases = [];
     }
 
     /**
@@ -18,7 +19,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(musicData, message, client, args) {
+    async exe(musicData, message, client, args) {
         let voice = musicData['voice'];
         let subscription = musicData['subscription'];
 

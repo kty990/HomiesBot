@@ -10,6 +10,7 @@ class command {
         this.name = "leave";
         this.description = "Leaves a voice channel if the user is in a voice channel with the bot.";
         this.options = [];
+        this.aliases = ["fuckoff", "waxoff", "disappear"];
     }
 
     /**
@@ -18,7 +19,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(musicData, message, client, args) {
+    async exe(musicData, message, client, args) {
         let voice = musicData['voice'];
         let subscription = musicData['subscription'];
 

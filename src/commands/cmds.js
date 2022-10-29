@@ -41,14 +41,8 @@ class command {
 
         this.name = "cmds";
         this.description = "In development";
-        // this.options = [
-        //     {
-        //         name: "page",
-        //         description: "The page of commands to display.",
-        //         required: false,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.INTEGER,
-        //     }
-        // ];
+        this.options = [];
+        this.aliases = ["commands"];
     }
 
     /**

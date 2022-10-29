@@ -66,7 +66,7 @@ const commands = { // required to edit as more commands are added
         "syntax": null,
     },
     "info": {
-        "description": "Displays info about a user.",
+        "description": "Displays info about a user. 'user' can be their ID, a mention, or their username",
         "syntax": "user (optional)",
     },
     "serverinfo": {
@@ -158,6 +158,7 @@ class command {
         this.name = "help";
         this.description = "In development";
         this.options = [];
+        this.aliases = [];
     }
 
     /**
