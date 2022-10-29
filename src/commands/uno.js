@@ -893,6 +893,7 @@ class command {
         this.name = "uno";
         this.description = "In development";
         this.options = [];
+        this.aliases = [];
     }
 
     /**
