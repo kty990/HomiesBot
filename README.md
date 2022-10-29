@@ -4,7 +4,7 @@
 Current release: v0.5.1
 ```
 
-This bot is limited to authorized servers only, To request access, join the [Homies Bot discord server](https://discord.gg/7YbWnNpsU5) and DM @phxntxsmic#2022
+This bot is limited to authorized servers only, To request access, join the [Homies Bot discord server](https://discord.gg/7YbWnNpsU5) and DM @phxntxsmic#8610
 
 # Information
 
@@ -50,3 +50,6 @@ _** Most likely to be removed as no current features require these permissions._
 
 # Contact
 [Discord](https://discord.gg/7YbWnNpsU5)
+
+# Future Changes Roadmap
+[Trello](https://trello.com/invite/b/hTCYYteO/ATTIb8cb2a2fb5324b434d2eac137d3c35c3BA4D58D1/homies-bot)
