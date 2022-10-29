@@ -9,14 +9,7 @@ class command {
         this.name = "ping";
         this.description = "Displays the latency the bot is experiencing.";
         this.options = [];
-        // this.options = [
-        //     {
-        //         name: "url",
-        //         description: "A link to a public or unlisted YouTube video",
-        //         required: false,
-        //         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-        //     }
-        // ];
+        this.aliases = [];
     }
 
     /**
@@ -25,7 +18,7 @@ class command {
      * @param {*} client : Client
      * @param {null} args 
     */
-    exe(message, client, args) {
+    async exe(message, client, args) {
         const channel = message.channel;
         let timeSinceEpoch = Math.round(Date.now());
         let difference = Math.round(message.createdTimestamp - timeSinceEpoch);
