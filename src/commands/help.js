@@ -1,152 +1,56 @@
 const embed = require('../homiesEmbed.js');
+const commands = require('../cmd_desc.json');
 
-const commands = { // required to edit as more commands are added
-    "play": {
-        "description": "Requires voice channel: Plays video audio from YouTube.",
-        "syntax": "url / query"
-    },
-    "skip": {
-        "description": "Skips a song in the queue.",
-        "syntax": null,
-    },
-    "nowplaying": {
-        "description": "Shows data about the current song.",
-        "syntax": null,
-    },
-    "resume": {
-        "description": "Resumes playback",
-        "syntax": null,
-    },
-    "pause": {
-        "description": "Pauses playback",
-        "syntax": null,
-    },
-    "shuffle": {
-        "description": "Shuffles the server queue",
-        "syntax": null,
-    },
-    "loopqueue": {
-        "description": "Toggles queue looping.",
-        "syntax": null,
-    },
-    "join": {
-        "description": "Forces bot to join your voice channel if it is not in one already.",
-        "syntax": null,
-    },
-    "leave": {
-        "description": "Forces bot to leave its current voice channel if you are in that channel.",
-        "syntax": null,
-    },
-    "queue": {
-        "description": "Displays the current song queue (10 songs/page)",
-        "syntax": "page",
-    },
-    "say": {
-        "description": "Forces the bot to say {message}.",
-        "syntax": "message",
-    },
-    "purge": {
-        "description": "Deletes {count} messages in the channel this was used in.",
-        "syntax": "count",
-    },
-    "cmds": {
-        "description": "Shows a list of commands (10 commands/page)",
-        "syntax": "page",
-    },
-    "aliases [page]": {
-        "description": "Shows a list of command aliases (10/page)",
-        "syntax": "page",
-    },
-    "help": {
-        "description": "Displays helpful information regarding the bot.",
-        "syntax": null,
-    },
-    "coinflip": {
-        "description": "Flips a coin. The result is either 'Heads' or 'Tails' with a 50-50 chance.",
-        "syntax": null,
-    },
-    "info": {
-        "description": "Displays info about a user. 'user' can be their ID, a mention, or their username",
-        "syntax": "user (optional)",
-    },
-    "serverinfo": {
-        "description": "Displays information about the current server.",
-        "syntax": null,
-    },
-    "settings (WIP)": {
-        "description": "IN DEVELOPMENT",
-        "syntax": null,
-    },
-    "cah (WIP)": {
-        "description": "IN DEVELOPMENT",
-        "syntax": null,
-    },
-    "password": {
-        "description": "Sends you a randomly generated password.",
-        "syntax": "length",
-    },
-    "uno": {
-        "description": "Creates an UNO game, requires players to react to join. 30 second window to join before the game auto-starts. (Needs 3 players MINIMUM) | IN DEVELOPMENT",
-        "syntax": null,
-    },
-    "bugs": {
-        "description": "Displays a list of all known bugs",
-        "syntax": "page",
-    },
-    "coup": {
-        "description": "IN DEVELOPMENT",
-        "syntax": null,
-    },
-    "premove": {
-        "description": "This ain't chess...",
-        "syntax": null,
-    },
-    "gtw": {
-        "description": "Try to guess the unscrambled version of the scrambled word | IN DEVELOPMENT",
-        "syntax": null,
+class command_storage {
+
+    /**
+     * Stores all commands for aliases reference
+     * @param {command} cmd 
+     */
+    constructor(cmd) {
+        this.LoadedCommands = {};
+        this.command = cmd;
+        this.stored_length = 0;
     }
-};
 
-const aliases = {
-    "play": ["p", "pl"],
-    "skip": ["s"],
-    "nowplaying": ["np"],
-    "resume": ["res", "r"],
-    "pause": ["pp"],
-    "join": ["enter", "fuckon", "waxon", "appear"],
-    "leave": ["fuckoff", "waxoff", "disappear"],
-    "queue": ["q"],
-    "say": [],
-    "purge": [],
-    "cmds": ["commands"],
-    "aliases": ["als"],
-    "help": [],
-    "coinflip": ["flipcoin", "flipacoin"],
-    "info": [],
-    "serverinfo": [],
-    "settings": ["alter", "change"],
-    "cah": [],
-    "password": ["pw"],
-    "bugs": ["knownbugs", "bug"],
-    "uno": [],
-    "coup": [],
-};
+    /**
+     * Initializes the CommandHandler with command data.
+     * 
+     * @param {*} guildInfo Datastore instance
+     * 
+     * @returns void
+     */
+    Initialize(guildInfo) {
+        this.guildInfo = guildInfo;
 
-/**
- * Checks if the provided string is an alias of a valid command.
- * 
- * @param {string | null} cmd 
- * @returns string | null
- */
-function IsAliasOf(cmd) {
-    for (const [c, als] of Object.entries(aliases)) {
-        for (const [i, v] of Object.entries(als)) {
-            if (v === cmd) {
-                return c;
+        for (let s = 0; s < directories.length; s++) {
+            let curr = directories[s];
+
+            let files;
+            if (curr === "commands") {
+                files = fs.readdirSync(__dirname);
+                console.log(__dirname);
+            } else {
+                files = fs.readdirSync(__dirname + curr.replace("commands\\", "\\"))
+                console.log(__dirname + curr.replace("commands\\", "\\"));
             }
+
+
+            files.forEach(file => {
+                let filename = file.split('.');
+                if (filename[1] == 'js') {
+                    if (filename[0] == "help") {
+                        // Don't want infinite loop/error
+                        this.LoadedCommands["help"] = this.command;
+                    } else {
+                        const { command } = require(`..\\${curr}\\${filename[0]}.js`);
+                        this.LoadedCommands[filename[0]] = new command(guildInfo);
+                    }
+                    this.stored_length++;
+                }
+            });
         }
     }
-    return null;
 }
 
 class command {
@@ -154,6 +58,8 @@ class command {
         this.isMusic = false;
         this.guildInfo = guildInfo;
         this.shouldDelete = true;
+
+        this.storage = new command_storage(guildInfo);
 
         this.name = "help";
         this.description = "In development";
@@ -172,7 +78,7 @@ class command {
 
         if (info_subject) {
             let data;
-            let alias = IsAliasOf(info_subject);
+            let alias = this.IsAliasOf(info_subject);
             for (const [key, value] of Object.entries(commands)) {
                 if (key.toLowerCase().substring(0, info_subject.length) === info_subject.toLowerCase() || alias == key) {
                     data = {
@@ -205,6 +111,28 @@ class command {
                 .catch(console.error);
         })
         return;
+    }
+
+    /**
+    * Checks if the provided string is an alias of, or the name of, a valid command.
+    * 
+    * @param {*} cmd 
+    * @returns string | null
+    */
+    IsAliasOf(cmd) {
+        for (const [key, command] of Object.entries(this.storage.LoadedCommands)) {
+            if (key.toLowerCase().substring(0, cmd.length) == cmd.toLowerCase()) {
+                return key
+            } else {
+                for (let x = 0; x < command.aliases.length; x++) {
+                    let curr = command.aliases[x];
+                    if (curr.toLowerCase().substring(0, cmd.length) == cmd.toLowerCase()) {
+                        return key
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
