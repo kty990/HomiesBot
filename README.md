@@ -23,9 +23,10 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 - node
 - oppuscript
 - play-dl
-- vm2 : test.js
-- python-shell : testpy.js
+- vm2*
+- python-shell*
 
+*Developer command dependency
 *All other dependencies listed in package.json are no longer in use and should be removed.*
 *This will be addressed in the next patch*
 
