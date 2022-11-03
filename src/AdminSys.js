@@ -10,19 +10,21 @@ class AdminUser {
      * @param {*} DiscordMember 
      */
     constructor(Guild, DiscordMember) {
-        this.adminLevel = (this.IsAdmin(Guild, DiscordMember)) ? 1 : 0; // 1 = admin, 0 = non-admin
+        this.adminLevel = 1;
         this.id = DiscordMember.id;
+        this.DiscordMember = DiscordMember;
         this.guild = Guild;
     }
 
     IsAdmin() {
-        return false; // temp
+        return true;
     }
 }
 
 class GuildAdminSystem {
     constructor(Guild) {
         this.AdminMembers = []; // type: AdminUser
+        this.AllMembers = [];
         this.Guild = Guild;
     }
 
@@ -42,8 +44,8 @@ class GuildAdminSystem {
     }
 
     MemberExists(ID) {
-        for (let i = 0; i < this.AdminMembers.length; i++) {
-            const member = this.AdminMembers[i];
+        for (let i = 0; i < this.AllMembers.length; i++) {
+            const member = this.AllMembers[i];
             if (member.id == ID) {
                 return true;
             }
@@ -51,12 +53,16 @@ class GuildAdminSystem {
         return false;
     }
 
-    AddMember(DiscordMember) {
+    AddMember(DiscordMember,IsAdmin) {
         if (this.MemberExists(DiscordMember.id)) {
             return;
         }
-        let member = new AdminUser(this.Guild, DiscordMember);
-        this.AdminMembers.push(member);
+        if (IsAdmin) {
+            let member = new AdminUser(this.Guild, DiscordMember);
+            this.AdminMembers.push(member);
+            console.log(this.AdminMembers);
+        }
+        this.AllMembers.push(DiscordMember);
     }
 
     RemoveMember(DiscordMember) {
@@ -65,6 +71,13 @@ class GuildAdminSystem {
             const member = this.AdminMembers[i];
             if (member.id == DiscordMember.id) {
                 this.AdminMembers.splice(i,1);
+                break;
+            }
+        }
+        for (let i = 0; i < this.AllMembers.length; i++) {
+            const member = this.AllMembers[i];
+            if (member.id == DiscordMember.id) {
+                this.AllMembers.splice(i,1);
                 break;
             }
         }
