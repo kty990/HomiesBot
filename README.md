@@ -27,6 +27,7 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 - python-shell*
 
 *Developer command dependency
+
 *All other dependencies listed in package.json are no longer in use and should be removed.*
 *This will be addressed in the next patch*
 
