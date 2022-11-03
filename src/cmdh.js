@@ -1,9 +1,17 @@
+/**
+ * TODO:
+ *      1. Add admin members if a user is updated to include thet Administrator permission, or the user becomes the admin of the sevrer
+ *          - Remove the old owner if the ownership was transfered, or the old owner does not have an admin role
+ */
+
 // ** Dependancies **
 
 const fs = require('fs'); // File I/O
-const embed = require('./homiesEmbed');
+const {PermissionsBitField} = require('discord.js');
+const {GuildAdminSystem} = require("./AdminSys.js");
 
-const { directories } = require('./cmd_dir.json')
+const { directories } = require('./cmd_dir.json');
+const embed = require('./homiesEmbed');
 
 class CommandHandler {
     constructor(client, guild) {
@@ -39,6 +47,19 @@ class CommandHandler {
      */
     Initialize(guildInfo) {
         this.guildInfo = guildInfo;
+        this.guildAdminSys = new GuildAdminSystem(this.guild);
+
+        let members = this.guild.members;
+        members.forEach(member => {
+            let roles = member.roles.cache;
+            for (const [snowflake,role] of roles.entries) {
+                if (role.permissions.has(PermissionsBitField.All,true)) {
+                    // Is Admin
+                    this.guildAdminSys.AddMember(member,true);
+                }
+            }
+            this.guildAdminSys.AddMember(member,false); //If already added as admin, nothing changes
+        });
 
         for (let s = 0; s < directories.length; s++) {
             let curr = directories[s];
