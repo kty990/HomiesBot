@@ -89,7 +89,7 @@ class SlashCommand {
      * @returns void
      */
     addSubCommand(options) {
-        if (options == undefined || options == null) {
+        if (!options instanceof SubSlashCommand) {
             throw new Error(`Unable to add ${typeof(options)} sub_command`);
         }
         this.builder.addSubcommand(options);
