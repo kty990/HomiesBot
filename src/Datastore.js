@@ -1,3 +1,5 @@
+// THIS FILE IS DEPRECATED AND SHOULD NOT BE USED. NEW VERSION COMING SOON.
+
 // ** Dependancies **
 
 const fs = require('fs');
