@@ -15,16 +15,19 @@ This bot is limited to authorized servers only, To request access, join the [Hom
 
 # Dependencies
 
-- discord.js (REST, voice, discord.js)
-- axios
-- discord-api-types
-- ffmpeg, ffmpeg-static
-- libsodium-wrappers
-- node
-- oppuscript
-- play-dl
-- vm2*
-- python-shell*
+- discord.js (v14.0.3+)
+- discordjs/rest (v0.5.0+)
+- discordjs/voice (v0.10.0)
+- axios (v1.2.0+)
+- discord-api-types (v0.34.0)
+- ffmpeg (v0.0.4)
+- ffmpeg-static (v4.4.1+)
+- libsodium-wrappers (v0.7.10+)
+- node (v.18.4.0+)
+- oppuscript (v0.0.8+)
+- play-dl (v1.9.5+)
+- vm2* (@latest version)
+- python-shell* (@latest version)
 
 *Developer command dependency
 
